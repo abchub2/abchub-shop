@@ -3,392 +3,287 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이팜 (Lee's Farm) - 산지직송 프리미엄 제철 과일</title>
+    <title>이팜 (Lee's Farm) - 산지직송 프리미엄 제철과일</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR & Montserrat) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#16a34a',
+                            lightgreen: '#f0fdf4',
+                            orange: '#f97316',
+                            lightorange: '#fff7ed',
+                            yellow: '#f59e0b',
+                            dark: '#14532d',
+                            naver: '#03C75A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                        montserrat: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Pretendard', sans-serif; }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .bg-pattern {
+            background-color: #fafdfb;
+            background-image: radial-gradient(#16a34a 0.6px, transparent 0.6px), radial-gradient(#16a34a 0.6px, #fafdfb 0.6px);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+        }
     </style>
 </head>
-<body class="bg-[#FBF9F4] text-stone-800">
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-brand-green selection:text-white pb-20 md:pb-0">
 
-    <!-- 상단 헤더 -->
-    <header class="sticky top-0 z-50 bg-[#FBF9F4]/90 backdrop-blur-md border-b border-amber-900/10">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="#" class="text-xl font-bold text-amber-900 flex items-center gap-2">
-                <span>🌱</span> 이팜 <span class="text-xs font-normal text-amber-800/60">Lee's Farm</span>
-            </a>
-            <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-stone-700">
-                <a href="#hero" class="hover:text-emerald-700 transition">홈</a>
-                <a href="#calendar" class="hover:text-emerald-700 transition">제철 달력</a>
-                <a href="#products" class="hover:text-emerald-700 transition">상품 목록</a>
-                <a href="#about" class="hover:text-emerald-700 transition">농장 소개</a>
-            </nav>
-            <div class="flex items-center gap-2 sm:gap-3">
-                <button type="button" onclick="openAdminModal()" class="text-xs bg-stone-200 hover:bg-stone-300 text-stone-800 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1 cursor-pointer">
-                    <span>⚙️</span> 상품 관리자
-                </button>
-                <button type="button" onclick="toggleCart()" class="relative bg-emerald-800 text-white px-3.5 py-2 rounded-xl text-sm font-medium hover:bg-emerald-900 transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-                    🛒 장바구니 <span id="cart-badge" class="bg-amber-400 text-stone-900 text-xs px-1.5 py-0.2 rounded-full font-bold">0</span>
-                </button>
+    <!-- Header / Navigation -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm" id="header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="https://www.abchub.kr" class="flex items-center gap-2 group">
+                    <div class="w-11 h-11 rounded-2xl bg-brand-green text-white flex items-center justify-center font-bold text-2xl shadow-md group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-leaf text-brand-yellow"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-black text-2xl tracking-tight text-gray-900 leading-none">이팜</span>
+                        <span class="text-[10px] text-brand-green font-montserrat tracking-widest uppercase font-bold mt-1">Lee's Farm</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-8 font-medium text-gray-700">
+                    <a href="#seasonal" class="hover:text-brand-green transition-colors py-2 font-semibold">제철 과일 모음</a>
+                    <a href="#calendar" class="hover:text-brand-green transition-colors py-2 font-semibold">월별 제철 달력</a>
+                    <a href="#promise" class="hover:text-brand-green transition-colors py-2 font-semibold">이팜의 약속</a>
+                    <a href="#contact" class="hover:text-brand-green transition-colors py-2 font-semibold">주문 및 문의</a>
+                </nav>
+
+                <!-- Actions (Admin & Cart & Kakao) -->
+                <div class="hidden md:flex items-center gap-3">
+                    <button onclick="toggleAdminModal()" class="inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-bold transition-all border border-gray-200">
+                        <i class="fa-solid fa-gear text-brand-green"></i>
+                        <span>상품 관리자</span>
+                    </button>
+                    
+                    <button onclick="toggleCartModal()" class="relative p-2.5 text-gray-700 bg-gray-100 hover:bg-brand-lightgreen hover:text-brand-green rounded-xl transition-colors">
+                        <i class="fa-solid fa-basket-shopping text-lg"></i>
+                        <span id="cart-badge" class="absolute -top-1 -right-1 bg-brand-orange text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+
+                    <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="inline-flex items-center gap-2 bg-[#FEE500] text-[#191919] px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:shadow-md hover:bg-[#fdd800] transition-all">
+                        <i class="fa-solid fa-comment text-lg"></i>
+                        <span>카톡 빠른 주문</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Header Menu Button -->
+                <div class="flex items-center gap-2 md:hidden">
+                    <button onclick="toggleAdminModal()" class="p-2 text-gray-600 bg-gray-100 rounded-lg text-xs font-bold">
+                        <i class="fa-solid fa-gear text-brand-green"></i>
+                    </button>
+                    <button onclick="toggleCartModal()" class="relative p-2 text-gray-700 bg-gray-100 rounded-lg">
+                        <i class="fa-solid fa-basket-shopping text-lg"></i>
+                        <span id="cart-badge-mobile" class="absolute -top-1 -right-1 bg-brand-orange text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                    <button id="mobile-menu-btn" class="text-gray-700 p-2 focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-6 space-y-3">
+            <a href="#seasonal" class="block py-2 text-gray-800 hover:text-brand-green font-bold">제철 과일 모음</a>
+            <a href="#calendar" class="block py-2 text-gray-800 hover:text-brand-green font-bold">월별 제철 달력</a>
+            <a href="#promise" class="block py-2 text-gray-800 hover:text-brand-green font-bold">이팜의 약속</a>
+            <a href="#contact" class="block py-2 text-gray-800 hover:text-brand-green font-bold">주문 및 문의</a>
+            
+            <div class="pt-2 grid grid-cols-2 gap-2">
+                <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] py-3 rounded-xl font-bold text-xs shadow-sm">
+                    <i class="fa-solid fa-comment text-sm"></i>
+                    <span>카톡 상담하기</span>
+                </a>
+                <a href="tel:010-7570-6357" class="flex items-center justify-center gap-2 bg-brand-green text-white py-3 rounded-xl font-bold text-xs shadow-sm">
+                    <i class="fa-solid fa-phone text-sm"></i>
+                    <span>010-7570-6357</span>
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- 히어로 배너 (원래 감성 농장 스타일) -->
-    <section id="hero" class="relative bg-[#2D4030] text-amber-50 py-20 px-4 overflow-hidden">
-        <div class="max-w-4xl mx-auto text-center relative z-10">
-            <span class="bg-emerald-900/80 text-amber-200 text-xs px-3.5 py-1.5 rounded-full font-medium inline-block mb-4 border border-amber-200/20">
-                www.abchub.kr • 산지직송 프리미엄 과일
-            </span>
-            <h1 class="text-3xl md:text-5xl font-bold tracking-tight mb-6 leading-tight font-serif text-amber-100">
-                자연의 정성을 담은<br>신선한 제철 과일을 전합니다
-            </h1>
-            <p class="text-stone-300 text-base md:text-lg mb-8 max-w-2xl mx-auto font-light">
-                복잡한 유통 과정 없이 산지에서 수확하여 집 앞까지 정성껏 보내드립니다.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-3">
-                <a href="#products" class="bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold px-8 py-3.5 rounded-xl transition shadow-md">
-                    제철 과일 구경하기
-                </a>
-                <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="bg-white/10 hover:bg-white/20 text-white font-medium px-8 py-3.5 rounded-xl transition border border-white/20">
-                    카카오톡 문의하기
-                </a>
-            </div>
-        </div>
-    </section>
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-brand-lightgreen via-white to-brand-lightorange py-16 md:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-green/10 text-brand-green font-bold text-xs sm:text-sm">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse"></span>
+                        <span>자연 그대로 전달하는 이팜 (Lee's Farm)</span>
+                    </div>
+                    
+                    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-tight tracking-tight">
+                        산지에서 바로 따온 <br class="hidden sm:inline"/>
+                        <span class="text-brand-green underline decoration-brand-yellow decoration-wavy underline-offset-8">싱싱한 제철 과일</span>을 <br/>
+                        식탁까지 안전하게
+                    </h1>
+                    
+                    <p class="text-base sm:text-lg text-gray-600 max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                        이팜(Lee's Farm)은 산지 농가와의 직거래로 엄격한 당도 선별을 거친 최고 품질의 제철 과일만을 당일 발송합니다.
+                    </p>
 
-    <!-- 12월 제철 과일 달력 -->
-    <section id="calendar" class="py-12 bg-white border-b border-amber-900/5">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold text-stone-900">1년 12달 제철 달력</h2>
-                <p class="text-stone-500 text-sm mt-1">월을 클릭하면 해당 시즌의 대표 과일을 모아볼 수 있습니다.</p>
-            </div>
-            <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2" id="month-buttons">
-                <!-- JS 생성 -->
-            </div>
-        </div>
-    </section>
+                    <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                        <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#FEE500] text-[#191919] px-8 py-4 rounded-2xl font-extrabold text-base shadow-lg shadow-yellow-500/20 hover:bg-[#fdd800] hover:scale-[1.02] active:scale-[0.98] transition-all">
+                            <i class="fa-solid fa-comment text-xl"></i>
+                            <span>카카오톡 1:1 바로 주문하기</span>
+                        </a>
+                        <a href="tel:010-7570-6357" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-gray-800 border-2 border-gray-200 px-8 py-4 rounded-2xl font-bold text-base hover:bg-gray-50 transition-all">
+                            <i class="fa-solid fa-phone text-brand-orange"></i>
+                            <span>010-7570-6357 전화상담</span>
+                        </a>
+                    </div>
+                </div>
 
-    <!-- 과일 상품 목록 -->
-    <section id="products" class="py-16 px-4 max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-stone-900" id="section-title">이팜 제철 과일 목록</h2>
-                <p class="text-stone-500 text-sm mt-1">산지 직송으로 만나보는 맛있는 과일들입니다.</p>
-            </div>
-            <div class="flex gap-2 flex-wrap" id="filter-container">
-                <button type="button" onclick="filterProducts('all', this)" class="filter-btn text-xs px-4 py-2 rounded-xl font-medium bg-emerald-800 text-white transition shadow-sm cursor-pointer">전체</button>
-                <button type="button" onclick="filterProducts('봄', this)" class="filter-btn text-xs px-4 py-2 rounded-xl font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition cursor-pointer">🌱 봄</button>
-                <button type="button" onclick="filterProducts('여름', this)" class="filter-btn text-xs px-4 py-2 rounded-xl font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition cursor-pointer">☀️ 여름</button>
-                <button type="button" onclick="filterProducts('가을', this)" class="filter-btn text-xs px-4 py-2 rounded-xl font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition cursor-pointer">🍂 가을</button>
-                <button type="button" onclick="filterProducts('겨울', this)" class="filter-btn text-xs px-4 py-2 rounded-xl font-medium bg-white text-stone-600 border border-stone-200 hover:bg-stone-50 transition cursor-pointer">❄️ 겨울</button>
-            </div>
-        </div>
-
-        <!-- 상품 카드 그리드 -->
-        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- JS 렌더링 -->
-        </div>
-    </section>
-
-    <!-- 푸터 -->
-    <footer id="about" class="bg-[#1E2920] text-stone-400 py-12 px-4 border-t border-stone-800">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-            <div>
-                <h3 class="text-amber-100 font-bold text-base mb-3">이팜 (Lee's Farm)</h3>
-                <p class="leading-relaxed text-stone-400 text-xs">
-                    정직하게 키운 신선한 제철 과일을 농장에서 직송해 드리는 신선식품 마켓입니다.
-                </p>
-            </div>
-            <div>
-                <h3 class="text-amber-100 font-bold text-base mb-3">고객센터 및 주문</h3>
-                <p class="mb-1 text-xs">전화 문의: <a href="tel:010-7570-6357" class="text-amber-400 font-bold">010-7570-6357</a></p>
-                <p class="mb-1 text-xs">카카오톡: <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="text-amber-400 underline">카카오톡 실시간 상담</a></p>
-            </div>
-            <div>
-                <h3 class="text-amber-100 font-bold text-base mb-3">도메인 정보</h3>
-                <p class="text-xs mb-1">공식 웹사이트: www.abchub.kr</p>
-                <p class="text-xs text-stone-500">네이버 스마트스토어 연동 허브 페이지</p>
-            </div>
-        </div>
-        <div class="max-w-6xl mx-auto px-4 mt-8 pt-6 border-t border-stone-800/80 text-center text-xs text-stone-600">
-            &copy; Lee's Farm. All Rights Reserved.
-        </div>
-    </footer>
-
-    <!-- 장바구니 사이드바 -->
-    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition duration-300 flex flex-col">
-        <div class="p-4 border-b border-stone-200 flex items-center justify-between bg-[#FBF9F4]">
-            <h3 class="font-bold text-stone-800">장바구니 (<span id="cart-count">0</span>)</h3>
-            <button type="button" onclick="toggleCart()" class="text-stone-400 hover:text-stone-700 font-bold text-xl cursor-pointer">&times;</button>
-        </div>
-        <div id="cart-items" class="flex-1 overflow-y-auto p-4 space-y-3">
-            <!-- 장바구니 항목 -->
-        </div>
-        <div class="p-4 border-t border-stone-200 bg-[#FBF9F4]">
-            <div class="flex justify-between font-bold text-lg mb-4">
-                <span>총 주문 금액</span>
-                <span id="cart-total" class="text-emerald-800">0원</span>
-            </div>
-            <button type="button" onclick="checkoutKakao()" class="w-full bg-amber-400 hover:bg-amber-500 text-stone-900 font-bold py-3 rounded-xl transition mb-2 shadow-sm cursor-pointer">
-                카카오톡 주문 문의하기
-            </button>
-            <button type="button" onclick="toggleCart()" class="w-full bg-stone-200 text-stone-700 text-sm font-medium py-2 rounded-xl transition cursor-pointer">
-                닫기
-            </button>
-        </div>
-    </div>
-    <div id="cart-backdrop" onclick="toggleCart()" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
-
-    <!-- 상품 관리자 모달 -->
-    <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 hidden">
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-stone-100">
-                <h3 class="font-bold text-stone-800">⚙️ 이팜 상품 관리자</h3>
-                <button type="button" onclick="closeAdminModal()" class="text-stone-500 hover:text-stone-800 font-bold text-xl cursor-pointer">&times;</button>
-            </div>
-            <div class="p-5 overflow-y-auto space-y-5 flex-1">
-                <form id="product-form" onsubmit="saveProduct(event)" class="space-y-3 bg-stone-50 p-4 rounded-xl border border-stone-200">
-                    <input type="hidden" id="edit-index" value="-1">
-                    <h4 class="font-bold text-xs text-stone-700" id="form-title">과일 추가/수정</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                        <div>
-                            <label class="block font-medium mb-1">과일명</label>
-                            <input type="text" id="p-name" required placeholder="샤인머스캣 2kg" class="w-full border p-2 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">가격(원)</label>
-                            <input type="number" id="p-price" required placeholder="7500" class="w-full border p-2 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">계절</label>
-                            <select id="p-season" class="w-full border p-2 rounded-lg">
-                                <option value="봄">봄</option>
-                                <option value="여름">여름</option>
-                                <option value="가을">가을</option>
-                                <option value="겨울">겨울</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-medium mb-1">설명</label>
-                            <input type="text" id="p-desc" required placeholder="고당도 / 산지직송" class="w-full border p-2 rounded-lg">
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block font-medium mb-1">이미지 URL</label>
-                            <input type="url" id="p-img" required placeholder="https://..." class="w-full border p-2 rounded-lg">
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label class="block font-medium text-emerald-800 mb-1">🛒 스마트스토어 구매 링크 (URL)</label>
-                            <input type="url" id="p-link" placeholder="https://smartstore.naver.com/..." class="w-full border border-emerald-300 p-2 rounded-lg bg-emerald-50/30">
+                <!-- Hero Image Showcase -->
+                <div class="lg:col-span-5 relative">
+                    <div class="relative mx-auto max-w-md lg:max-w-none">
+                        <div class="bg-white p-3.5 rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                            <img src="https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=800&q=80" alt="Fresh Fruits" class="w-full h-80 sm:h-96 object-cover rounded-2xl">
+                            
+                            <div class="absolute top-8 left-8 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-lg border border-gray-100 flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-brand-lightgreen flex items-center justify-center text-brand-green font-bold">
+                                    <i class="fa-solid fa-apple-whole text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[11px] text-gray-400 font-bold">이팜 추천 프리미엄</p>
+                                    <p class="text-sm font-extrabold text-gray-900">산지직송 제철 과일</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" onclick="resetForm()" class="bg-stone-200 text-stone-700 px-3 py-1.5 rounded-lg text-xs cursor-pointer">초기화</button>
-                        <button type="submit" class="bg-emerald-800 text-white px-4 py-1.5 rounded-lg text-xs font-bold cursor-pointer">저장하기</button>
-                    </div>
-                </form>
+                </div>
 
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Catalog Section -->
+    <section id="seasonal" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
                 <div>
-                    <h4 class="font-bold text-xs text-stone-700 mb-2">등록된 과일 관리</h4>
-                    <div id="admin-product-list" class="space-y-1.5"></div>
+                    <span class="text-brand-orange font-bold text-xs tracking-widest uppercase">Lee's Farm Products</span>
+                    <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mt-1">이팜 제철 과일 모음</h2>
+                    <p class="text-gray-500 mt-2 text-sm">스마트스토어에서 안전하게 네이버페이로 결제하실 수 있습니다.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="filterSeason('all')" class="season-btn active px-4 py-2 rounded-xl text-xs font-bold transition-all bg-brand-green text-white shadow-sm" data-season="all">전체</button>
+                    <button onclick="filterSeason('spring')" class="season-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-season="spring">🌸 봄</button>
+                    <button onclick="filterSeason('summer')" class="season-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-season="summer">☀️ 여름</button>
+                    <button onclick="filterSeason('autumn')" class="season-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-season="autumn">🍁 가을</button>
+                    <button onclick="filterSeason('winter')" class="season-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-gray-100 text-gray-600 hover:bg-gray-200" data-season="winter">❄️ 겨울</button>
+                    
+                    <button onclick="toggleAdminModal()" class="ml-auto md:ml-2 px-3 py-2 bg-gray-900 text-white hover:bg-gray-800 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>상품 링크 관리</span>
+                    </button>
                 </div>
             </div>
-            <div class="p-3 border-t border-stone-200 bg-stone-50 flex justify-end">
-                <button type="button" onclick="closeAdminModal()" class="bg-stone-800 text-white text-xs px-4 py-1.5 rounded-lg cursor-pointer">닫기</button>
+
+            <!-- Fruit Cards Grid -->
+            <div id="fruit-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- JavaScript Dynamic Rendering -->
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 스크립트 -->
-    <script>
-        const defaultProducts = [
-            { name: "프리미엄 샤인머스캣 2kg", price: 7500, season: "가을", desc: "18Brix 이상 고당도 / 산지직송 특가", img: "https://images.unsplash.com/photo-1537640538966-79f365141fbe?auto=format&fit=crop&w=600&q=80", link: "" },
-            { name: "대저 짭짤이 토마토 2.5kg", price: 12900, season: "봄", desc: "새콤달콤 짭조름한 프리미엄 토마토", img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80", link: "" },
-            { name: "꿀고구마 한가득 3kg", price: 9900, season: "겨울", desc: "해남 산지직송 달콤한 꿀고구마", img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80", link: "" },
-            { name: "성주 꿀참외 3kg", price: 15800, season: "여름", desc: "아삭아삭한 식감과 높은 당도", img: "https://images.unsplash.com/photo-1587735243615-c03f25cac129?auto=format&fit=crop&w=600&q=80", link: "" }
-        ];
+    <!-- Monthly Harvest Calendar Section -->
+    <section id="calendar" class="py-20 bg-pattern border-y border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-brand-green font-bold text-xs tracking-widest uppercase">Harvest Calendar</span>
+                <h2 class="text-3xl sm:text-4xl font-black text-gray-900 mt-1">이팜 월별 제철 과일 달력</h2>
+            </div>
 
-        let products = JSON.parse(localStorage.getItem('lees_farm_products')) || defaultProducts;
-        let cart = [];
+            <div class="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100 mb-8">
+                <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-2 text-center">
+                    <script>
+                        for(let i=1; i<=12; i++) {
+                            const isCurrent = (new Date().getMonth() + 1) === i;
+                            document.write(`
+                                <button onclick="selectMonth(${i})" id="month-btn-${i}" class="month-btn p-3 rounded-2xl transition-all font-bold text-xs flex flex-col items-center gap-1 ${isCurrent ? 'bg-brand-green text-white shadow-md scale-105' : 'bg-gray-50 text-gray-700 hover:bg-brand-lightgreen hover:text-brand-green'}">
+                                    <span class="text-[10px] font-normal opacity-80">${i <= 2 || i === 12 ? '겨울' : i <= 5 ? '봄' : i <= 8 ? '여름' : '가을'}</span>
+                                    <span class="text-sm">${i}월</span>
+                                </button>
+                            `);
+                        }
+                    </script>
+                </div>
+            </div>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderMonthButtons();
-            renderProducts(products);
-            renderAdminList();
-        });
+            <div id="calendar-detail-card" class="bg-white rounded-3xl p-6 sm:p-10 shadow-lg border border-gray-100">
+                <!-- JS Rendered -->
+            </div>
+        </div>
+    </section>
 
-        function renderMonthButtons() {
-            const container = document.getElementById('month-buttons');
-            let html = '';
-            for(let i=1; i<=12; i++) {
-                let seasonName = (i>=3 && i<=5) ? '봄' : (i>=6 && i<=8) ? '여름' : (i>=9 && i<=11) ? '가을' : '겨울';
-                html += `<button type="button" onclick="filterByMonth(${i}, '${seasonName}')" class="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-stone-200 text-center transition cursor-pointer">
-                    <div class="text-[10px] text-stone-400">${i}월</div>
-                    <div class="text-xs font-bold text-stone-800">${i}월 과일</div>
-                </button>`;
-            }
-            container.innerHTML = html;
-        }
+    <!-- Order & Contact Info Section -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-r from-brand-lightgreen via-emerald-50 to-orange-50 rounded-3xl p-8 sm:p-12 border border-gray-200/80 shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                    
+                    <div class="lg:col-span-7 space-y-6">
+                        <span class="inline-block px-3 py-1 rounded-md bg-brand-green text-white font-bold text-xs">고객센터 & 상담</span>
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                            전화 및 카카오톡으로 <br/>
+                            편리하게 주문 문의하세요
+                        </h2>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            네이버 스마트스토어 결제 관련 문의나 대량 구매 상담은 아래 번호로 연락 주세요.
+                        </p>
 
-        function filterByMonth(month, season) {
-            document.getElementById('section-title').innerText = `${month}월 제철 과일`;
-            const filtered = products.filter(p => p.season === season);
-            renderProducts(filtered.length > 0 ? filtered : products);
-        }
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <a href="tel:010-7570-6357" class="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-brand-lightgreen text-brand-green flex items-center justify-center text-xl font-bold">
+                                    <i class="fa-solid fa-phone"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 font-bold">고객센터 / 직통번호</p>
+                                    <p class="text-lg font-extrabold text-gray-900">010-7570-6357</p>
+                                </div>
+                            </a>
 
-        function filterProducts(season, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                b.classList.remove('bg-emerald-800', 'text-white');
-                b.classList.add('bg-white', 'text-stone-600');
-            });
-            if(btn) {
-                btn.classList.add('bg-emerald-800', 'text-white');
-                btn.classList.remove('bg-white', 'text-stone-600');
-            }
-
-            if(season === 'all') {
-                document.getElementById('section-title').innerText = '이팜 제철 과일 목록';
-                renderProducts(products);
-            } else {
-                document.getElementById('section-title').innerText = `[${season}] 제철 과일`;
-                renderProducts(products.filter(p => p.season === season));
-            }
-        }
-
-        function renderProducts(list) {
-            const grid = document.getElementById('product-grid');
-            if(list.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-stone-400">등록된 과일이 없습니다.</div>`;
-                return;
-            }
-            grid.innerHTML = list.map((p, idx) => `
-                <div class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs hover:shadow-md transition flex flex-col">
-                    <div class="relative h-48 bg-stone-100 overflow-hidden">
-                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover">
-                        <span class="absolute top-3 left-3 bg-emerald-800 text-white text-[11px] px-2.5 py-0.5 rounded-full font-medium">${p.season} 제철</span>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-bold text-stone-900 text-base mb-1">${p.name}</h3>
-                            <p class="text-xs text-stone-500 mb-3">${p.desc}</p>
-                            <div class="text-lg font-bold text-emerald-800 mb-4">${p.price.toLocaleString()}원</div>
-                        </div>
-                        <div class="flex gap-2">
-                            ${p.link ? `<a href="${p.link}" target="_blank" class="flex-1 bg-amber-400 hover:bg-amber-500 text-stone-950 font-bold py-2 px-3 rounded-xl text-center text-xs transition flex items-center justify-center">구매하기</a>` : ''}
-                            <button type="button" onclick="addToCart('${p.name}', ${p.price})" class="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium py-2 px-3 rounded-xl text-center text-xs transition cursor-pointer">장바구니</button>
+                            <a href="http://pf.kakao.com/_cxhCVn/chat" target="_blank" class="flex items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                                <div class="w-12 h-12 rounded-xl bg-[#FEE500] text-gray-900 flex items-center justify-center text-xl font-bold">
+                                    <i class="fa-solid fa-comment"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 font-bold">카카오톡 채널</p>
+                                    <p class="text-base font-extrabold text-gray-900">이팜 1:1 채팅 주문</p>
+                                </div>
+                            </a>
                         </div>
                     </div>
-                </div>
-            `).join('');
-        }
 
-        function addToCart(name, price) {
-            cart.push({name, price});
-            updateCartUI();
-            toggleCart();
-        }
-
-        function toggleCart() {
-            document.getElementById('cart-sidebar').classList.toggle('translate-x-full');
-            document.getElementById('cart-backdrop').classList.toggle('hidden');
-        }
-
-        function updateCartUI() {
-            document.getElementById('cart-badge').innerText = cart.length;
-            document.getElementById('cart-count').innerText = cart.length;
-            const container = document.getElementById('cart-items');
-            if(cart.length === 0) {
-                container.innerHTML = `<p class="text-center text-stone-400 py-8 text-xs">장바구니가 비어 있습니다.</p>`;
-                document.getElementById('cart-total').innerText = '0원';
-                return;
-            }
-            let total = 0;
-            container.innerHTML = cart.map((item, idx) => {
-                total += item.price;
-                return `<div class="flex justify-between items-center bg-stone-50 p-2.5 rounded-xl text-xs">
-                    <div>
-                        <div class="font-bold text-stone-800">${item.name}</div>
-                        <div class="text-emerald-800 font-medium">${item.price.toLocaleString()}원</div>
-                    </div>
-                    <button type="button" onclick="removeFromCart(${idx})" class="text-red-400 font-bold px-1 cursor-pointer">✕</button>
-                </div>`;
-            }).join('');
-            document.getElementById('cart-total').innerText = total.toLocaleString() + '원';
-        }
-
-        function removeFromCart(idx) { cart.splice(idx, 1); updateCartUI(); }
-
-        function checkoutKakao() {
-            if(cart.length === 0) return;
-            let msg = "[이팜 주문 문의]\n";
-            cart.forEach(i => msg += `- ${i.name} (${i.price.toLocaleString()}원)\n`);
-            let total = cart.reduce((sum, i) => sum + i.price, 0);
-            msg += `총 금액: ${total.toLocaleString()}원`;
-            window.open(`http://pf.kakao.com/_cxhCVn/chat?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); }
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); resetForm(); }
-
-        function saveProduct(e) {
-            e.preventDefault();
-            const idx = document.getElementById('edit-index').value;
-            const newP = {
-                name: document.getElementById('p-name').value,
-                price: Number(document.getElementById('p-price').value),
-                season: document.getElementById('p-season').value,
-                desc: document.getElementById('p-desc').value,
-                img: document.getElementById('p-img').value,
-                link: document.getElementById('p-link').value
-            };
-            if(idx === "-1") products.push(newP);
-            else products[idx] = newP;
-            localStorage.setItem('lees_farm_products', JSON.stringify(products));
-            renderProducts(products);
-            renderAdminList();
-            resetForm();
-            alert("저장되었습니다!");
-        }
-
-        function renderAdminList() {
-            const list = document.getElementById('admin-product-list');
-            list.innerHTML = products.map((p, idx) => `
-                <div class="flex justify-between items-center bg-stone-50 p-2 rounded-lg text-xs">
-                    <div><span class="font-bold">${p.name}</span> (${p.price.toLocaleString()}원)</div>
-                    <div class="flex gap-1">
-                        <button type="button" onclick="editProduct(${idx})" class="bg-stone-200 px-2 py-0.5 rounded cursor-pointer">수정</button>
-                        <button type="button" onclick="deleteProduct(${idx})" class="bg-red-100 text-red-600 px-2 py-0.5 rounded cursor-pointer">삭제</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function editProduct(idx) {
-            const p = products[idx];
-            document.getElementById('edit-index').value = idx;
-            document.getElementById('p-name').value = p.name;
-            document.getElementById('p-price').value = p.price;
-            document.getElementById('p-season').value = p.season;
-            document.getElementById('p-desc').value = p.desc;
-            document.getElementById('p-img').value = p.img;
-            document.getElementById('p-link').value = p.link || '';
-        }
-
-        function deleteProduct(idx) {
-            if(confirm("삭제하시겠습니까?")) {
-                products.splice(idx, 1);
-                localStorage.setItem('lees_farm_products', JSON.stringify(products));
-                renderProducts(products);
-                renderAdminList();
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('product-form').reset();
-            document.getElementById('edit-index').value = "-1";
-        }
-    </script>
-</body>
-</html>
+                    <div class="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl shadow-md border border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fa-regular fa-paper-plane text-brand
