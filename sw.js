@@ -1,11 +1,11 @@
 'use strict';
-const RELEASE='20261103-pwa1';
+const RELEASE='20261103-community1';
 const CACHE_PREFIX='leesfarm-shell-';
 const CACHE_NAME=CACHE_PREFIX+RELEASE;
 const BASE=new URL('./',self.location.href);
 const SHELL=[
   './index.html','./offline.html','./manifest.webmanifest',
-  `./style.css?v=${RELEASE}`,`./catalog.js?v=${RELEASE}`,`./app.js?v=${RELEASE}`,`./pwa.js?v=${RELEASE}`,
+  `./style.css?v=${RELEASE}`,`./community.js?v=${RELEASE}`,`./catalog.js?v=${RELEASE}`,`./app.js?v=${RELEASE}`,`./pwa.js?v=${RELEASE}`,
   './assets/fonts/PretendardVariable.woff2',
   './assets/grape-bunch.jpg','./assets/citrus-fruit.jpg','./assets/fresh-apples.jpg','./assets/farm.svg',
   './assets/icons/app-icon.svg','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/icons/icon-maskable-512.png','./assets/icons/apple-touch-icon.png'

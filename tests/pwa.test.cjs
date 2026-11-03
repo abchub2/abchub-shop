@@ -62,5 +62,5 @@ test('the HTML and service worker refer to the same shell version',async()=>{
  const w=worker();let install;w.events.install({waitUntil:p=>install=p});await install;
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  const assets=[...html.matchAll(/(?:src|href)="([^" ]+\.(?:js|css)\?[^" ]+)"/g)].map(match=>new URL(match[1],'https://www.abchub.kr/').href);
- assert.equal(assets.length,4);for(const asset of assets)assert(w.cached.includes(asset),`uncached shell asset ${asset}`);
+ assert.equal(assets.length,5);for(const asset of assets)assert(w.cached.includes(asset),`uncached shell asset ${asset}`);
 });
