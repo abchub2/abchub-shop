@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "products": [
+    {
+      "id": "shine-2kg",
+      "name": "샤인머스켓",
+      "category": "small",
+      "size": "2kg",
+      "price": 7500,
+      "kind": "grapes",
+      "description": "싱그러운 샤인머스켓을 즐겨 보세요. 재고와 배송 일정은 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
+      "id": "jeju-1-5kg",
+      "name": "타이백 제주감귤",
+      "category": "small",
+      "size": "1.5kg",
+      "price": 7900,
+      "kind": "mandarins",
+      "description": "제주감귤의 상큼한 맛을 즐겨 보세요. 재고와 배송 일정은 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
+      "id": "apple-5kg",
+      "name": "사과",
+      "category": "family",
+      "size": "5kg",
+      "price": 25000,
+      "kind": "apples",
+      "description": "함께 나누어 먹기 좋은 사과입니다. 품종과 크기, 배송 일정은 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
+      "id": "apple-10kg",
+      "name": "사과",
+      "category": "family",
+      "size": "10kg",
+      "price": 49000,
+      "kind": "apples",
+      "description": "넉넉하게 즐기는 사과 한 상자입니다. 품종과 크기, 배송 일정은 상담에서 확인해 주세요.",
+      "soldOut": false
+    }
+  ]
+}

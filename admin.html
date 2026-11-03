@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>상품 관리자 — 이팜</title>
+<link rel="preload" href="assets/fonts/PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=20261103-admin1"><link rel="stylesheet" href="admin.css?v=20261103-admin1">
+<script src="catalog.js?v=20261103-admin1" defer></script><script src="admin.js?v=20261103-admin1" defer></script>
+</head>
+<body class="admin-page">
+<header class="admin-header"><a class="logo" href="index.html">❧ 이팜</a><a href="index.html">홈페이지 보기 ↗</a></header>
+<main class="admin-main">
+<div class="admin-heading"><p class="eyebrow">LEE’S FARM ADMIN</p><h1>상품 관리</h1><p>상품 정보와 판매 상태를 수정하세요. 저장하면 자동 배포 후 홈페이지에 반영됩니다.</p></div>
+<section id="login-panel" class="admin-panel" aria-labelledby="login-heading">
+<h2 id="login-heading">관리자 인증</h2><p>이 홈페이지의 GitHub 저장소에 쓰기 권한이 있는 관리자만 저장할 수 있습니다.</p>
+<form id="login-form"><label for="github-token">GitHub 관리자 인증 토큰</label><input id="github-token" name="github-token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" required placeholder="이 화면에서만 입력해 주세요"><p class="admin-help">인증 토큰은 현재 화면의 메모리에서만 사용하며, 저장하지 않습니다. 새로고침하거나 로그아웃하면 다시 인증해야 합니다.</p><button class="button primary" id="login-button" type="submit">인증하고 상품 불러오기</button></form>
+<details class="admin-auth-guide"><summary>처음 사용하시나요? 관리자 인증 준비</summary><ol><li>저장소 관리자 GitHub 계정으로 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained personal access token 만들기 ↗</a>를 여세요.</li><li>Resource owner를 <strong>abchub2</strong>로 선택하고, Repository access에서 <strong>Only select repositories → abchub-shop</strong>을 선택하세요.</li><li>Repository permissions의 <strong>Contents</strong>를 <strong>Read and write</strong>로 설정하고 만료일을 지정하세요. Metadata 읽기 권한은 기본 포함됩니다.</li><li>생성한 토큰을 위 입력칸에 넣으세요. 토큰을 채팅이나 메일로 보내지 마세요. 조직 승인이나 저장소 보호 규칙이 있으면 해당 관리자 설정을 먼저 완료해야 합니다.</li></ol></details>
+</section>
+<p id="admin-status" class="admin-status" role="status" aria-live="polite"></p>
+<section id="editor-panel" hidden aria-labelledby="editor-heading">
+<div class="admin-toolbar"><div><h2 id="editor-heading">등록 상품</h2><p id="save-state">저장된 상품을 불러왔습니다.</p></div><button type="button" id="logout-button" class="admin-secondary">로그아웃</button></div>
+<p class="admin-notice">품절로 설정한 상품은 ‘품절’ 표시와 함께 담기가 중지됩니다. 기존 장바구니에 담긴 경우에도 주문 전에 삭제하도록 안내합니다.</p>
+<form id="products-form"><fieldset id="products-fields"><legend class="sr-only">상품 수정</legend><div id="admin-products"></div></fieldset><div class="admin-save-bar"><button type="submit" class="button primary" id="save-button" disabled>변경 사항 저장</button><button type="button" class="admin-secondary" id="reload-button">저장된 상품 다시 불러오기</button></div></form>
+<p class="admin-help">저장 후 사이트 반영까지 보통 1~3분이 걸립니다. <a href="https://github.com/abchub2/abchub-shop/actions" target="_blank" rel="noopener noreferrer">배포 상태 확인 ↗</a> · 반영 후 홈페이지를 새로고침해 주세요.</p>
+</section>
+</main>
+</body></html>
