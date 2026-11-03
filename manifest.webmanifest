@@ -1,0 +1,23 @@
+{
+  "id": "./",
+  "name": "이팜 — 제철 과일",
+  "short_name": "이팜",
+  "description": "제철 과일을 둘러보고 장바구니 주문서로 카카오톡 상담을 시작하세요.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf9f3",
+  "theme_color": "#254d36",
+  "categories": ["shopping", "food"],
+  "icons": [
+    {"src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ],
+  "shortcuts": [
+    {"name": "제철 과일 보기", "short_name": "제철 과일", "url": "./#shop"},
+    {"name": "배송과 이용 안내", "short_name": "이용 안내", "url": "./#guide"}
+  ]
+}

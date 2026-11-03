@@ -5,12 +5,17 @@
   let catalogState = 'loading';
   let activeFilter = 'all';
   let catalogRequest = null;
+  let catalogRetryTimer = null;
   let orderInFlight = false;
   const key = 'lees-farm-cart-v2';
   const chatUrl = 'https://pf.kakao.com/_cxhCVn/chat';
   const orderDraft = {name:'', phone:'', address:'', note:''};
   const money = value => value.toLocaleString('ko-KR') + '원';
   let cart = {};
+  function reportCatalogState(){
+    document.documentElement.dataset.catalogState=catalogState;
+    window.dispatchEvent(new Event('shop:catalog-state'));
+  }
   function restoreCart() {
     cart={};
     try {
@@ -22,18 +27,22 @@
   }
   function loadCatalog() {
     if(catalogRequest)return catalogRequest;
+    clearTimeout(catalogRetryTimer);
     catalogRequest=(async()=>{
       try {
         const response=await fetch('products.json',{cache:'no-store'});
         if(!response.ok)throw new Error('catalog unavailable');
         products=validate(await response.json());
-        catalogState='ready';restoreCart();renderProducts(activeFilter);persist();
+        catalogState='ready';reportCatalogState();restoreCart();renderProducts(activeFilter);persist();
         return true;
       } catch (_) {
-        catalogState='error';renderProducts(activeFilter);renderCart();
+        catalogState='error';reportCatalogState();renderProducts(activeFilter);renderCart();
         return false;
       }
-    })().finally(()=>{catalogRequest=null;});
+    })().finally(()=>{
+      catalogRequest=null;
+      if(catalogState==='error'&&!document.hidden&&navigator.onLine)catalogRetryTimer=setTimeout(loadCatalog,15000);
+    });
     return catalogRequest;
   }
   function fruit(kind) {
@@ -68,6 +77,7 @@
   function add(id) {
     const product=products.find(p=>p.id===id);
     if(!product)return;
+    if(catalogState!=='ready')return toast('인터넷 연결 후 상품 정보를 다시 확인해 주세요.');
     if(product.soldOut)return toast('품절된 상품은 담을 수 없어요.');
     if((cart[id]||0)>=99) return toast('상품별 최대 99개까지 담을 수 있어요.');
     cart[id]=(cart[id]||0)+1; persist(); toast('장바구니에 담았어요.');
@@ -184,5 +194,15 @@
     if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();
   }));
   try { localStorage.removeItem('lees-farm-cart-v1'); } catch (_) {}
-  renderProducts(); loadCatalog();
+  window.addEventListener('offline',()=>{
+    catalogState='error';reportCatalogState();renderProducts(activeFilter);renderCart();
+    const detailDialog=document.querySelector('#detail-dialog');
+    if(detailDialog.open)detailDialog.close();
+  });
+  window.addEventListener('online',()=>loadCatalog());
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)clearTimeout(catalogRetryTimer);
+    else if(catalogState==='error')loadCatalog();
+  });
+  reportCatalogState();renderProducts();loadCatalog();
 })();
