@@ -1,9 +1,9 @@
 'use strict';
 (() => {
   const photos = {
-    grapes: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?auto=format&fit=crop&w=1200&q=85',
-    mandarins: 'https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=1200&q=85',
-    apples: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=1200&q=85'
+    grapes: 'assets/grape-bunch.jpg',
+    mandarins: 'assets/citrus-fruit.jpg',
+    apples: 'assets/fresh-apples.jpg'
   };
   const products = [
     {id:'shine-2kg',name:'샤인머스켓',category:'small',label:'2kg',size:'2kg',price:7500,color:'#e3e7d7',kind:'grapes',description:'샤인머스켓 2kg 구성입니다. 판매 가격은 7,500원이며 재고와 배송 일정은 상담에서 확인해 주세요.'},
@@ -22,14 +22,8 @@
   } catch (_) { /* Storage may be unavailable in private browsing. */ }
   function fruit(kind) {
     const alt = {grapes:'청포도 참고 사진',mandarins:'감귤류 참고 사진',apples:'사과 참고 사진'};
-    return `<img src="${photos[kind]}" alt="${alt[kind]} · 실제 판매 상품의 품종과 외관은 다를 수 있습니다" loading="lazy" decoding="async" data-fallback="assets/${kind}.jpg">`;
+    return `<img src="${photos[kind]}" alt="${alt[kind]} · 실제 판매 상품의 품종과 외관은 다를 수 있습니다" loading="lazy" decoding="async">`;
   }
-  document.addEventListener('error',event=>{
-    const image=event.target;
-    if(image instanceof HTMLImageElement && image.dataset.fallback){
-      const fallback=image.dataset.fallback;delete image.dataset.fallback;image.src=fallback;
-    }
-  },true);
   function renderProducts(filter='all') {
     const list = products.filter(p => filter === 'all' || p.category === filter);
     document.querySelector('#product-count').textContent = `총 ${list.length}개`;
@@ -98,10 +92,5 @@
     if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();
   }));
   try { localStorage.removeItem('lees-farm-cart-v1'); } catch (_) {}
-  document.querySelectorAll('img[data-fallback]').forEach(image=>{
-    if(image.complete && !image.naturalWidth){
-      const fallback=image.dataset.fallback;delete image.dataset.fallback;image.src=fallback;
-    }
-  });
   renderProducts(); persist();
 })();
