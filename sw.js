@@ -1,5 +1,5 @@
 'use strict';
-const RELEASE='20261103-pwa1';
+const RELEASE='20261103-restore1';
 const CACHE_PREFIX='leesfarm-shell-';
 const CACHE_NAME=CACHE_PREFIX+RELEASE;
 const BASE=new URL('./',self.location.href);
