@@ -35,7 +35,7 @@
     return btoa(binary);
   }
   function render(){
-    $('#admin-products').innerHTML=products.map(p=>`<article class="admin-product" data-product="${p.id}"><div class="admin-product-heading"><img src="${photos[p.kind]}" alt="과일 참고 사진"><div><h3>${esc(p.name)} ${esc(p.size)}</h3><p><span class="admin-sale-state ${p.soldOut?'sold-out':''}">${p.soldOut?'품절':'판매 중'}</span></p></div></div><div class="admin-grid"><label class="admin-field">상품명<input data-field="name" value="${esc(p.name)}" maxlength="80" required></label><label class="admin-field">중량·구성<input data-field="size" value="${esc(p.size)}" maxlength="40" required placeholder="예: 2kg"></label><label class="admin-field">판매 가격 (원)<input data-field="price" type="number" value="${p.price}" min="1" max="10000000" step="1" inputmode="numeric" required></label><label class="admin-field">상품 분류<select data-field="category">${[['small','소포장'],['family','가족용'],['group','공동구매']].map(([value,label])=>`<option value="${value}" ${p.category===value?'selected':''}>${label}</option>`).join('')}</select></label><label class="admin-field">상품 사진<select data-field="kind">${[['grapes','포도송이'],['mandarins','감귤류'],['apples','사과'],['shinanoGold','시나노골드 실물 사진']].map(([value,label])=>`<option value="${value}" ${p.kind===value?'selected':''}>${label}</option>`).join('')}</select></label><label class="admin-field admin-field-wide">상품 설명<textarea data-field="description" rows="3" maxlength="2000">${esc(p.description)}</textarea></label></div><label class="admin-stock"><input data-field="soldOut" type="checkbox" ${p.soldOut?'checked':''}><span>품절로 표시<small>체크하면 장바구니 담기와 주문이 중지됩니다.</small></span></label></article>`).join('');
+    $('#admin-products').innerHTML=products.map(p=>`<article class="admin-product" data-product="${p.id}"><div class="admin-product-heading"><img src="${photos[p.photo||p.kind]}" alt="과일 참고 사진"><div><h3>${esc(p.name)} ${esc(p.size)}</h3><p><span class="admin-sale-state ${p.soldOut?'sold-out':''}">${p.soldOut?'품절':'판매 중'}</span></p></div></div><div class="admin-grid"><label class="admin-field">상품명<input data-field="name" value="${esc(p.name)}" maxlength="80" required></label><label class="admin-field">중량·구성<input data-field="size" value="${esc(p.size)}" maxlength="40" required placeholder="예: 2kg"></label><label class="admin-field">판매 가격 (원)<input data-field="price" type="number" value="${p.price}" min="1" max="10000000" step="1" inputmode="numeric" required></label><label class="admin-field">상품 분류<select data-field="category">${[['small','소포장'],['family','가족용'],['group','공동구매']].map(([value,label])=>`<option value="${value}" ${p.category===value?'selected':''}>${label}</option>`).join('')}</select></label><label class="admin-field">상품 사진<select data-field="kind">${[['grapes','포도송이'],['mandarins','감귤류'],['apples','사과'],['shinanoGold','시나노골드 실물 사진']].map(([value,label])=>`<option value="${value}" ${(p.photo||p.kind)===value?'selected':''}>${label}</option>`).join('')}</select></label><label class="admin-field admin-field-wide">상품 설명<textarea data-field="description" rows="3" maxlength="2000">${esc(p.description)}</textarea></label></div><label class="admin-stock"><input data-field="soldOut" type="checkbox" ${p.soldOut?'checked':''}><span>품절로 표시<small>체크하면 장바구니 담기와 주문이 중지됩니다.</small></span></label></article>`).join('');
     updateSaveState();
   }
   function setBusy(value){saving=value;$('#products-fields').disabled=value;$('#reload-button').disabled=value;$('#logout-button').disabled=value;$('#products-form').setAttribute('aria-busy',String(value));updateSaveState();}
@@ -62,7 +62,11 @@
     product[field]=field==='soldOut'?input.checked:field==='price'?Number(input.value):input.value;
     card.querySelector('h3').textContent=`${product.name} ${product.size}`;
     const badge=card.querySelector('.admin-sale-state');badge.textContent=product.soldOut?'품절':'판매 중';badge.classList.toggle('sold-out',product.soldOut);
-    if(field==='kind')card.querySelector('img').src=photos[product.kind];
+    if(field==='kind'){
+      delete product.photo;
+      if(product.kind==='shinanoGold'){product.kind='apples';product.photo='shinanoGold';}
+      card.querySelector('img').src=photos[product.photo||product.kind];
+    }
     updateSaveState();
   });
   $('#products-form').addEventListener('submit',async event=>{

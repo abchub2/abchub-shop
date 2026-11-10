@@ -15,8 +15,9 @@
       ids.add(p.id);
       if(!Number.isSafeInteger(p.price) || p.price<1 || p.price>10000000)throw new Error(`${label}의 가격은 1~10,000,000원 정수로 입력해 주세요.`);
       if(!['small','family','group'].includes(p.category) || !Object.hasOwn(photos,p.kind) || typeof p.soldOut!=='boolean')throw new Error(`${label}의 분류·사진·판매 상태를 확인해 주세요.`);
+      if(p.photo!==undefined && !Object.hasOwn(photos,p.photo))throw new Error(`${label}의 사진을 확인해 주세요.`);
       const size=text(p.size,`${label} 중량`,40);
-      return {id:p.id,name:text(p.name,`${label} 상품명`,80),size,price:p.price,category:p.category,kind:p.kind,description:text(p.description,`${label} 설명`,2000,false),soldOut:p.soldOut,label:size,color:colors[p.kind]};
+      return {id:p.id,name:text(p.name,`${label} 상품명`,80),size,price:p.price,category:p.category,kind:p.kind,description:text(p.description,`${label} 설명`,2000,false),soldOut:p.soldOut,...(p.photo!==undefined?{photo:p.photo}:{}),label:size,color:colors[p.photo||p.kind]};
     });
   }
   function serialize(products) {

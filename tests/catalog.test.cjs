@@ -36,3 +36,18 @@ test('derived labels/colors are regenerated rather than trusted',()=>{
  const data=copy();data.products[0].color='url(evil)';data.products[0].label='wrong';
  const product=catalog.validate(data)[0];assert.equal(product.label,product.size);assert.equal(product.color,'#f3edce');
 });
+
+test('catalog remains readable by browsers with the previous cached validator',()=>{
+ const legacy={window:{}};
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'fixtures/catalog-before-custom-photos.js'),'utf8'),legacy);
+ const products=legacy.window.ShopCatalog.validate(source);
+ assert.equal(products.length,source.products.length);
+ const shinano=products.find(p=>p.id==='shinano-gold-5kg');
+ assert.equal(shinano.price,12500);assert.equal(shinano.kind,'apples');
+});
+test('custom product photo survives admin serialization and rejects unknown paths',()=>{
+ const data=copy();const shinano=data.products.find(p=>p.id==='shinano-gold-5kg');
+ assert.equal(catalog.validate(data).find(p=>p.id===shinano.id).photo,'shinanoGold');
+ assert.equal(JSON.parse(catalog.serialize(data.products)).products.find(p=>p.id===shinano.id).photo,'shinanoGold');
+ shinano.photo='https://example.com/unknown.jpg';assert.throws(()=>catalog.validate(data));
+});

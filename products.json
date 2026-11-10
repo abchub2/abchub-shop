@@ -7,9 +7,10 @@
       "category": "family",
       "size": "1박스 5kg",
       "price": 12500,
-      "kind": "shinanoGold",
+      "kind": "apples",
       "description": "시나노골드 1박스 5kg입니다. 재고와 배송 일정은 카카오톡 상담에서 확인해 주세요.",
-      "soldOut": false
+      "soldOut": false,
+      "photo": "shinanoGold"
     },
     {
       "id": "shine-2kg",

@@ -1,5 +1,5 @@
 'use strict';
-const RELEASE='20261110-shinano1';
+const RELEASE='20261110-catalogfix1';
 const CACHE_PREFIX='leesfarm-shell-';
 const CACHE_NAME=CACHE_PREFIX+RELEASE;
 const BASE=new URL('./',self.location.href);
