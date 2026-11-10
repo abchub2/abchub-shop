@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const {photos,validate,escape:esc} = window.ShopCatalog;
+  const {photos,productPhotos,validate,escape:esc} = window.ShopCatalog;
   let products = [];
   let catalogState = 'loading';
   let activeFilter = 'all';
@@ -44,7 +44,9 @@
     });
     return catalogRequest;
   }
-  function fruit(kind) {
+  function fruit(product) {
+    if(productPhotos[product.id])return `<img src="${productPhotos[product.id][0]}" alt="${esc(product.name)} ${esc(product.size)} 실물 사진" loading="lazy" decoding="async">`;
+    const kind=product.photo||product.kind;
     if(kind==='shinanoGold')return `<img src="${photos[kind]}" alt="시나노골드 1박스 5kg 실물 사진" loading="lazy" decoding="async">`;
     const alt = {grapes:'청포도 참고 사진',mandarins:'감귤류 참고 사진',apples:'사과 참고 사진'};
     return `<img src="${photos[kind]}" alt="${alt[kind]} · 실제 판매 상품의 품종과 외관은 다를 수 있습니다" loading="lazy" decoding="async">`;
@@ -60,7 +62,7 @@
     }
     const list=products.filter(p=>filter==='all'||p.category===filter);
     document.querySelector('#product-count').textContent=`총 ${list.length}개`;
-    container.innerHTML=list.map(p=>`<article class="product-card ${p.soldOut?'is-sold-out':''}"><button class="product-view" data-detail="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} 상세 보기"><div class="product-art" style="background:${p.color}"><span class="product-badge">${esc(p.label)}</span>${fruit(p.photo||p.kind)}${p.soldOut?'<span class="sold-out-badge">품절</span>':''}</div><div class="product-info"><span class="product-category">SEASONAL FRUIT</span><h3>${esc(p.name)}</h3><p>${esc(p.size)}</p></div></button><div class="price-row"><strong>${money(p.price)}</strong><button class="add-button" data-add="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} ${p.soldOut?'품절':'장바구니 담기'}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절':'담기 +'}</button></div></article>`).join('') || '<p class="catalog-message">이 분류에 등록된 상품이 없습니다.</p>';
+    container.innerHTML=list.map(p=>`<article class="product-card ${p.soldOut?'is-sold-out':''}"><button class="product-view" data-detail="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} 상세 보기"><div class="product-art" style="background:${p.color}"><span class="product-badge">${esc(p.label)}</span>${fruit(p)}${p.soldOut?'<span class="sold-out-badge">품절</span>':''}</div><div class="product-info"><span class="product-category">SEASONAL FRUIT</span><h3>${esc(p.name)}</h3><p>${esc(p.size)}</p></div></button><div class="price-row"><strong>${money(p.price)}</strong><button class="add-button" data-add="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} ${p.soldOut?'품절':'장바구니 담기'}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절':'담기 +'}</button></div></article>`).join('') || '<p class="catalog-message">이 분류에 등록된 상품이 없습니다.</p>';
   }
   function persist() {
     try { localStorage.setItem(key,JSON.stringify(cart)); } catch (_) {}
@@ -123,7 +125,7 @@
 
   function detail(id) {
     const p=products.find(p=>p.id===id); if(!p)return;
-    document.querySelector('#detail-content').innerHTML=`<div class="product-art detail-art" style="background:${p.color}">${fruit(p.photo||p.kind)}</div>${(p.photo||p.kind)==='shinanoGold'?'<div class="product-gallery" aria-label="시나노골드 추가 사진"><img src="assets/shinano-gold-2.jpg" alt="시나노골드 박스 추가 사진 1" loading="lazy"><img src="assets/shinano-gold-3.jpg" alt="시나노골드 박스 추가 사진 2" loading="lazy"></div>':''}<p class="eyebrow">${esc(p.size)} · 제철 과일</p><h2 id="detail-title">${esc(p.name)}</h2><p class="detail-description">${esc(p.description)}</p><p>${esc(p.size)} / <strong>${money(p.price)}</strong></p><p class="detail-note">${(p.photo||p.kind)==='shinanoGold'?'판매자가 제공한 시나노골드 실물 사진입니다. 과일의 크기와 외관은 박스마다 다를 수 있습니다.':'사진은 과일 참고 이미지이며 실제 판매 상품의 품종·외관·포장과 다를 수 있습니다.'} 자세한 상품 정보와 배송 일정은 카카오톡 상담에서 확인해 주세요.</p><button class="button primary detail-add" data-add="${p.id}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절된 상품입니다':'장바구니에 담기 <span>+</span>'}</button>`;
+    document.querySelector('#detail-content').innerHTML=`<div class="product-art detail-art" style="background:${p.color}">${fruit(p)}</div>${(productPhotos[p.id]?.length||0)>1?`<div class="product-gallery" aria-label="${esc(p.name)} 추가 사진">${productPhotos[p.id].slice(1).map((src,i)=>`<img src="${src}" alt="${esc(p.name)} ${esc(p.size)} 추가 사진 ${i+1}" loading="lazy">`).join('')}</div>`:''}<p class="eyebrow">${esc(p.size)} · 제철 과일</p><h2 id="detail-title">${esc(p.name)}</h2><p class="detail-description">${esc(p.description)}</p><p>${esc(p.size)} / <strong>${money(p.price)}</strong></p><p class="detail-note">${productPhotos[p.id]?'판매자가 제공한 상품 실물 사진입니다. 과일의 크기와 외관은 박스마다 다를 수 있습니다.':'사진은 과일 참고 이미지이며 실제 판매 상품의 품종·외관·포장과 다를 수 있습니다.'} 자세한 상품 정보와 배송 일정은 카카오톡 상담에서 확인해 주세요.</p><button class="button primary detail-add" data-add="${p.id}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절된 상품입니다':'장바구니에 담기 <span>+</span>'}</button>`;
     document.querySelector('#detail-dialog').showModal();
   }
   document.addEventListener('click',async event=>{
