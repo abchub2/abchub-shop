@@ -2,6 +2,16 @@
   "version": 1,
   "products": [
     {
+      "id": "shinano-gold-5kg",
+      "name": "시나노골드",
+      "category": "family",
+      "size": "1박스 5kg",
+      "price": 12500,
+      "kind": "shinanoGold",
+      "description": "시나노골드 1박스 5kg입니다. 재고와 배송 일정은 카카오톡 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
       "id": "shine-2kg",
       "name": "샤인머스켓",
       "category": "small",

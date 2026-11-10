@@ -1,7 +1,7 @@
 'use strict';
 (() => {
-  const photos = Object.freeze({grapes:'assets/grape-bunch.jpg',mandarins:'assets/citrus-fruit.jpg',apples:'assets/fresh-apples.jpg'});
-  const colors = {grapes:'#e3e7d7',mandarins:'#f2e7cc',apples:'#efe2d4'};
+  const photos = Object.freeze({grapes:'assets/grape-bunch.jpg',mandarins:'assets/citrus-fruit.jpg',apples:'assets/fresh-apples.jpg',shinanoGold:'assets/shinano-gold-1.jpg'});
+  const colors = {grapes:'#e3e7d7',mandarins:'#f2e7cc',apples:'#efe2d4',shinanoGold:'#f3edce'};
   function text(value, label, max, required=true) {
     if(typeof value!=='string' || value.length>max || (required&&!value.trim()))throw new Error(`${label}을(를) 확인해 주세요.`);
     return value.trim();

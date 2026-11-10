@@ -11,7 +11,7 @@ const source=JSON.parse(fs.readFileSync(path.join(root,'products.json'),'utf8'))
 const copy=()=>structuredClone(source);
 test('existing product IDs, prices, photos and stock survive serialization',()=>{
  const normalized=catalog.validate(source);
- assert.equal(normalized.length,4);
+ assert.equal(normalized.length,5);
  assert.deepEqual(JSON.parse(catalog.serialize(normalized)),source);
 });
 test('stock status must be a boolean',()=>{const data=copy();data.products[0].soldOut='false';assert.throws(()=>catalog.validate(data));});
@@ -34,5 +34,5 @@ test('bounded text and escaped markup prevent HTML injection',()=>{
 });
 test('derived labels/colors are regenerated rather than trusted',()=>{
  const data=copy();data.products[0].color='url(evil)';data.products[0].label='wrong';
- const product=catalog.validate(data)[0];assert.equal(product.label,product.size);assert.equal(product.color,'#e3e7d7');
+ const product=catalog.validate(data)[0];assert.equal(product.label,product.size);assert.equal(product.color,'#f3edce');
 });
