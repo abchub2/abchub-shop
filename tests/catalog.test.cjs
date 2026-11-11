@@ -11,7 +11,7 @@ const source=JSON.parse(fs.readFileSync(path.join(root,'products.json'),'utf8'))
 const copy=()=>structuredClone(source);
 test('existing product IDs, prices, photos and stock survive serialization',()=>{
  const normalized=catalog.validate(source);
- assert.equal(normalized.length,5);
+ assert.equal(normalized.length,8);
  assert.deepEqual(JSON.parse(catalog.serialize(normalized)),source);
 });
 test('stock status must be a boolean',()=>{const data=copy();data.products[0].soldOut='false';assert.throws(()=>catalog.validate(data));});

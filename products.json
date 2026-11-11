@@ -51,6 +51,36 @@
       "kind": "apples",
       "description": "넉넉하게 즐기는 사과 한 상자입니다. 품종과 크기, 배송 일정은 상담에서 확인해 주세요.",
       "soldOut": false
+    },
+    {
+      "id": "shinano-gold-bag",
+      "name": "시나노골드사과 봉지",
+      "category": "small",
+      "size": "1봉지 1.3kg 이상",
+      "price": 2900,
+      "kind": "apples",
+      "description": "시나노골드사과 봉지 상품입니다. 1봉지 1.3kg 이상, 1봉지 가격 2,900원입니다. 재고와 배송 일정은 카카오톡 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
+      "id": "soy-tofu",
+      "name": "단독판매 콩두부",
+      "category": "small",
+      "size": "1개 350g",
+      "price": 3500,
+      "kind": "apples",
+      "description": "단독판매 콩두부입니다. 1개 350g, 3,500원입니다. 재고와 배송 일정은 카카오톡 상담에서 확인해 주세요.",
+      "soldOut": false
+    },
+    {
+      "id": "carrot-bag",
+      "name": "당근",
+      "category": "small",
+      "size": "1봉지 650g 이상",
+      "price": 2900,
+      "kind": "mandarins",
+      "description": "당근 봉지 상품입니다. 1봉지 650g 이상, 2,900원입니다. 재고와 배송 일정은 카카오톡 상담에서 확인해 주세요.",
+      "soldOut": false
     }
   ]
 }
