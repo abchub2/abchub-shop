@@ -1,181 +1,58 @@
 'use strict';
-(() => {
-  const {photos,productPhotos,validate,escape:esc} = window.ShopCatalog;
-  let products = [];
-  let catalogState = 'loading';
-  let activeFilter = 'all';
-  let catalogRequest = null;
-  let catalogRetryTimer = null;
-  const key = 'lees-farm-cart-v2';
-  const chatUrl = 'https://pf.kakao.com/_cxhCVn/chat';
-  const orderDraft = {name:'', phone:'', address:'', note:''};
-  const money = value => value.toLocaleString('ko-KR') + '원';
-  let cart = {};
-  function reportCatalogState(){
-    document.documentElement.dataset.catalogState=catalogState;
-    window.dispatchEvent(new Event('shop:catalog-state'));
-  }
-  function restoreCart() {
-    cart={};
-    try {
-      const saved=JSON.parse(localStorage.getItem(key)||'{}');
-      if(saved && typeof saved==='object')for(const p of products){
-        if(Number.isInteger(saved[p.id])&&saved[p.id]>0)cart[p.id]=Math.min(saved[p.id],99);
-      }
-    } catch (_) {}
-  }
-  function loadCatalog() {
-    if(catalogRequest)return catalogRequest;
-    clearTimeout(catalogRetryTimer);
-    catalogRequest=(async()=>{
-      try {
-        const response=await fetch('products.json',{cache:'no-store'});
-        if(!response.ok)throw new Error('catalog unavailable');
-        products=validate(await response.json());
-        catalogState='ready';reportCatalogState();restoreCart();renderProducts(activeFilter);persist();
-        return true;
-      } catch (_) {
-        catalogState='error';reportCatalogState();renderProducts(activeFilter);renderCart();
-        return false;
-      }
-    })().finally(()=>{
-      catalogRequest=null;
-      if(catalogState==='error'&&!document.hidden&&navigator.onLine)catalogRetryTimer=setTimeout(loadCatalog,15000);
-    });
-    return catalogRequest;
-  }
-  function fruit(product) {
-    if(productPhotos[product.id])return `<img src="${productPhotos[product.id][0]}" alt="${esc(product.name)} ${esc(product.size)} 실물 사진" loading="lazy" decoding="async">`;
-    const kind=product.photo||product.kind;
-    if(kind==='shinanoGold')return `<img src="${photos[kind]}" alt="시나노골드 1박스 5kg 실물 사진" loading="lazy" decoding="async">`;
-    const alt = {grapes:'청포도 참고 사진',mandarins:'감귤류 참고 사진',apples:'사과 참고 사진'};
-    return `<img src="${photos[kind]}" alt="${alt[kind]} · 실제 판매 상품의 품종과 외관은 다를 수 있습니다" loading="lazy" decoding="async">`;
-  }
-  function renderProducts(filter='all') {
-    activeFilter=filter;
-    const container=document.querySelector('#products');
-    container.setAttribute('aria-busy',String(catalogState==='loading'));
-    if(catalogState!=='ready'){
-      document.querySelector('#product-count').textContent='';
-      container.innerHTML=catalogState==='error' ? '<p class="catalog-message" role="alert">상품 정보를 불러오지 못했습니다. <button data-reload-catalog>다시 불러오기</button></p>' : '<p class="catalog-message" role="status">상품 정보를 불러오는 중입니다.</p>';
-      return;
-    }
-    const list=products.filter(p=>filter==='all'||p.category===filter);
-    document.querySelector('#product-count').textContent=`총 ${list.length}개`;
-    container.innerHTML=list.map(p=>`<article class="product-card ${p.soldOut?'is-sold-out':''}"><button class="product-view" data-detail="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} 상세 보기"><div class="product-art" style="background:${p.color}"><span class="product-badge">${esc(p.label)}</span>${fruit(p)}${p.soldOut?'<span class="sold-out-badge">품절</span>':''}</div><div class="product-info"><span class="product-category">FRESH SELECTION</span><h3>${esc(p.name)}</h3><p>${esc(p.size)}</p></div></button><div class="price-row"><strong>${money(p.price)}</strong><button class="add-button" data-add="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} ${p.soldOut?'품절':'장바구니 담기'}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절':'담기 +'}</button></div></article>`).join('') || '<p class="catalog-message">이 분류에 등록된 상품이 없습니다.</p>';
-  }
-  function persist() {
-    try { localStorage.setItem(key,JSON.stringify(cart)); } catch (_) {}
-    const count = Object.values(cart).reduce((a,b)=>a+b,0);
-    document.querySelector('#cart-count').textContent = count;
-    document.querySelector('#mobile-cart-count').textContent = count;
-    renderCart();
-  }
-  let toastTimer;
-  function toast(message) {
-    const box=document.querySelector('#toast'); box.textContent=message; box.classList.add('visible');
-    clearTimeout(toastTimer); toastTimer=setTimeout(()=>box.classList.remove('visible'),2500);
-  }
-  function add(id) {
-    const product=products.find(p=>p.id===id);
-    if(!product)return;
-    if(catalogState!=='ready')return toast('인터넷 연결 후 상품 정보를 다시 확인해 주세요.');
-    if(product.soldOut)return toast('품절된 상품은 담을 수 없어요.');
-    if((cart[id]||0)>=99) return toast('상품별 최대 99개까지 담을 수 있어요.');
-    cart[id]=(cart[id]||0)+1; persist(); toast('장바구니에 담았어요.');
-  }
-  function selected() { return products.filter(p=>cart[p.id]); }
-  function canOrder() { return catalogState==='ready' && selected().length>0 && !selected().some(p=>p.soldOut); }
-  function orderText() {
-    const lines=selected().filter(p=>!p.soldOut).map(p=>`- ${p.name} (${p.size}) × ${cart[p.id]}: ${money(p.price*cart[p.id])}`);
-    const total=selected().filter(p=>!p.soldOut).reduce((sum,p)=>sum+p.price*cart[p.id],0);
-    return ['[이팜 주문 상담서]',...lines,`상품 합계: ${money(total)} (배송비 별도)`,...Object.entries({name:'주문자',phone:'연락처',address:'배송 주소',note:'요청 사항'}).filter(([key])=>orderDraft[key].trim()).map(([key,label])=>`${label}: ${orderDraft[key].trim()}`),'재고와 배송비, 배송 일정을 확인해 주세요.','상담 후 최종 금액과 결제 방법을 확인하면 주문이 확정됩니다.'].join('\n');
-  }
-  function renderCart() {
-    const list=selected();
-    document.querySelector('#cart-items').innerHTML=list.length ? list.map(p=>`<div class="cart-item"><div><h3>${esc(p.name)}${p.soldOut?' <span class="cart-sold-out">품절</span>':''}</h3><p>${esc(p.size)} · ${money(p.price*cart[p.id])}</p><button class="remove" data-remove="${p.id}" aria-label="${esc(p.name)} 삭제">삭제</button></div><div class="quantity"><button data-change="${p.id}" data-step="-1" aria-label="${esc(p.name)} 수량 줄이기" ${p.soldOut||cart[p.id]===1?'disabled':''}>−</button><span aria-label="수량">${cart[p.id]}</span><button data-change="${p.id}" data-step="1" aria-label="${esc(p.name)} 수량 늘리기" ${p.soldOut||cart[p.id]===99?'disabled':''}>+</button></div></div>`).join('') : '<div class="empty"><p>아직 담아두신 과일이 없어요.</p><button class="button primary" data-shopping>제철 과일 둘러보기 ↗</button></div>';
-    const summary=document.querySelector('#cart-summary');
-    summary.innerHTML=list.length ? `<div class="total"><span>${list.some(p=>p.soldOut)?'상품 합계 (품절 제외)':'상품 합계'}</span><strong>${money(list.filter(p=>!p.soldOut).reduce((sum,p)=>sum+p.price*cart[p.id],0))}</strong></div>${catalogState!=='ready'?'<p class="stock-warning" role="alert">상품 정보를 확인할 수 없어 주문을 중지했습니다. 상품 정보를 다시 불러와 주세요.</p>':''}${list.some(p=>p.soldOut)?'<p class="stock-warning" role="alert">장바구니에 품절 상품이 있습니다. 품절 상품을 삭제한 뒤 주문해 주세요.</p>':''}<p class="cart-notice">배송비는 상담 후 안내됩니다. 주문서를 확인하고 카카오톡 상담을 시작해 주세요.</p><fieldset class="order-fields"><legend>주문서 작성 <small>선택 입력</small></legend><p>지금 입력하거나 상담창에서 직접 알려주셔도 됩니다. 입력 정보는 이 페이지에서만 사용하며 저장하지 않습니다.</p><label>주문자<input data-order-field="name" maxlength="60" autocomplete="name" placeholder="이름"></label><label>연락처<input data-order-field="phone" maxlength="40" type="tel" autocomplete="tel" placeholder="연락 가능한 전화번호"></label><label>배송 주소<input data-order-field="address" maxlength="250" autocomplete="street-address" placeholder="상세 주소까지 입력해 주세요"></label><label>요청 사항<textarea data-order-field="note" maxlength="500" rows="2" placeholder="배송 또는 상품 관련 요청"></textarea></label></fieldset><label class="order-preview-label" for="order-text">카카오톡에 보낼 주문서</label><textarea class="order-text" id="order-text" readonly aria-label="복사할 주문서"></textarea><p class="order-instruction"><strong>주문서 복사하기 후 카카오톡 채팅하기 누르세요</strong><span>카카오톡 입력창을 길게 눌러 ‘붙여넣기’ 후 전송해 주세요.</span></p><div id="order-status" role="status" aria-live="polite"></div><div class="cart-actions"><button class="button primary" data-copy ${canOrder()?'':'disabled'}>주문서 복사하기 <span>⧉</span></button><button class="button kakao" data-order-chat ${canOrder()?'':'disabled'}>카카오톡 채팅하기 <span>↗</span></button><a class="button chat-retry" href="${chatUrl}" rel="noopener noreferrer" hidden>카카오톡 상담창 직접 열기 <span>↗</span></a></div>` : '';
-    if(list.length) {
-      document.querySelectorAll('[data-order-field]').forEach(input=>{input.value=orderDraft[input.dataset.orderField];});
-      document.querySelector('#order-text').value=orderText();
-    }
-  }
-  function orderStatus(message, retry=false) {
-    document.querySelector('#order-status').textContent=message;
-    document.querySelector('.chat-retry').hidden=!retry;
-  }
-  async function copyOrder() {
-    if(!canOrder())return false;
-    const text=orderText();
-    const area=document.querySelector('#order-text');area.value=text;
-    try { await navigator.clipboard.writeText(text); return true; }
-    catch (_) {
-      area.focus();area.select();area.setSelectionRange(0,area.value.length);
-      try { return document.execCommand('copy'); } catch (_) { return false; }
-    }
-  }
-  document.addEventListener('input',event=>{
-    const key=event.target.dataset.orderField;
-    if(!Object.hasOwn(orderDraft,key))return;
-    orderDraft[key]=event.target.value;
-    document.querySelector('#order-text').value=orderText();
-    orderStatus('');
-  });
-
-  function detail(id) {
-    const p=products.find(p=>p.id===id); if(!p)return;
-    document.querySelector('#detail-content').innerHTML=`<div class="product-art detail-art" style="background:${p.color}">${fruit(p)}</div>${(productPhotos[p.id]?.length||0)>1?`<div class="product-gallery" aria-label="${esc(p.name)} 추가 사진">${productPhotos[p.id].slice(1).map((src,i)=>`<img src="${src}" alt="${esc(p.name)} ${esc(p.size)} 추가 사진 ${i+1}" loading="lazy">`).join('')}</div>`:''}<p class="eyebrow">${esc(p.size)} · 상품 안내</p><h2 id="detail-title">${esc(p.name)}</h2><p class="detail-description">${esc(p.description)}</p><p>${esc(p.size)} / <strong>${money(p.price)}</strong></p><p class="detail-note">${productPhotos[p.id]?'판매자가 제공한 상품 실물 사진입니다. 상품의 외관과 포장은 실제 수령 상품과 다를 수 있습니다.':'사진은 과일 참고 이미지이며 실제 판매 상품의 품종·외관·포장과 다를 수 있습니다.'} 자세한 상품 정보와 배송 일정은 카카오톡 상담에서 확인해 주세요.</p><button class="button primary detail-add" data-add="${p.id}" ${p.soldOut?'disabled':''}>${p.soldOut?'품절된 상품입니다':'장바구니에 담기 <span>+</span>'}</button>`;
-    document.querySelector('#detail-dialog').showModal();
-  }
-  document.addEventListener('click',async event=>{
-    const button=event.target.closest('button');
-    if(!button)return;
-    if(button.hasAttribute('data-reload-catalog')){catalogState='loading';renderProducts();loadCatalog();}
-    if(button.hasAttribute('data-add'))add(button.dataset.add);
-    if(button.hasAttribute('data-detail'))detail(button.dataset.detail);
-    if(button.hasAttribute('data-filter')){
-      document.querySelectorAll('[data-filter]').forEach(b=>{const active=b===button;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
-      renderProducts(button.dataset.filter);
-    }
-    if(button.hasAttribute('data-cart')){await loadCatalog();const dialog=document.querySelector('#cart-dialog');if(!dialog.open)dialog.showModal();}
-    if(button.hasAttribute('data-close'))button.closest('dialog').close();
-    if(button.hasAttribute('data-shopping')){document.querySelector('#cart-dialog').close();document.querySelector('#shop').scrollIntoView();}
-    if(button.hasAttribute('data-remove')){delete cart[button.dataset.remove];persist();document.querySelector('#cart-dialog [data-change], #cart-dialog [data-shopping]')?.focus();}
-    if(button.hasAttribute('data-change')){
-      const id=button.dataset.change,step=Number(button.dataset.step);
-      if(products.find(p=>p.id===id)?.soldOut)return;
-      cart[id]=Math.max(1,Math.min(99,(cart[id]||1)+step));persist();
-      document.querySelector(`[data-change="${id}"][data-step="${step}"]:not(:disabled)`)?.focus();
-    }
-    if(button.hasAttribute('data-copy')){
-      await loadCatalog();
-      if(!canOrder())return toast('상품 상태가 바뀌었어요. 장바구니를 확인해 주세요.');
-      const copied=await copyOrder();
-      orderStatus(copied ? '주문서를 복사했습니다. 카카오톡 상담창에 붙여넣어 주세요.' : '자동 복사가 차단되었습니다. 선택된 주문서를 길게 누르거나 Ctrl/Cmd+C로 복사한 뒤 상담창을 열어 주세요.',true);
-      if(copied)toast('주문서를 복사했어요.');
-    }
-    if(button.hasAttribute('data-order-chat')){
-      if(!canOrder())return;
-      // Navigate during the tap: no popup or clipboard permission is required.
-      window.location.assign(chatUrl);
-    }
-  });
-  document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{
-    if(event.target!==dialog)return;
-    const rect=dialog.getBoundingClientRect();
-    if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();
-  }));
-  try { localStorage.removeItem('lees-farm-cart-v1'); } catch (_) {}
-  window.addEventListener('offline',()=>{
-    catalogState='error';reportCatalogState();renderProducts(activeFilter);renderCart();
-    const detailDialog=document.querySelector('#detail-dialog');
-    if(detailDialog.open)detailDialog.close();
-  });
-  window.addEventListener('online',()=>loadCatalog());
-  document.addEventListener('visibilitychange',()=>{
-    if(document.hidden)clearTimeout(catalogRetryTimer);
-    else if(catalogState==='error')loadCatalog();
-  });
-  reportCatalogState();renderProducts();loadCatalog();
+(()=>{
+ const {photos,productPhotos,validate,escape:esc}=window.ShopCatalog;
+ const ORDER_API='https://abchub-orders.resplendentalbum1.chatgpt.site';
+ const $=s=>document.querySelector(s),money=n=>n.toLocaleString('ko-KR')+'원';
+ const params=new URLSearchParams(location.search),productId=params.get('id');
+ let products=[],state='loading',cart={},request=null,retryTimer,toastTimer,category=params.get('category')||'all',query=params.get('q')||'',sort='default',quantity=1,currentProduct=null,submitting=false;
+ const key='lees-farm-cart-v2';let orderKey=null,orderFingerprint=null;let directOrders=false;
+ const group=p=>p.id==='soy-tofu'?'food':p.id==='carrot-bag'?'vegetable':'fruit';
+ const groupName=p=>({food:'먹거리',vegetable:'채소',fruit:'과일'})[group(p)];
+ const images=p=>productPhotos[p.id]||[photos[p.photo||p.kind]];
+ const productUrl=id=>'product.html?id='+encodeURIComponent(id);
+ const chosen=()=>products.filter(p=>cart[p.id]);
+ const subtotal=()=>chosen().reduce((n,p)=>n+(p.soldOut?0:p.price*cart[p.id]),0);
+ const canOrder=()=>state==='ready'&&chosen().length>0&&!chosen().some(p=>p.soldOut);
+ const photo=(p,cls='')=>`<img class="${cls}" src="${images(p)[0]}" alt="${esc(p.name)} ${esc(p.size)} ${productPhotos[p.id]?'실물':'참고'} 사진" loading="lazy" decoding="async">`;
+ function toast(t){$('#toast').textContent=t;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),2800)}
+ function report(){document.documentElement.dataset.catalogState=state;dispatchEvent(new Event('shop:catalog-state'))}
+ function restore(){cart={};try{const old=JSON.parse(localStorage.getItem(key)||'{}');for(const p of products)if(Number.isInteger(old[p.id])&&old[p.id]>0)cart[p.id]=Math.min(old[p.id],99)}catch{}}
+ function persist(){try{localStorage.setItem(key,JSON.stringify(cart))}catch{}const n=Object.values(cart).reduce((a,b)=>a+b,0);$('#cart-count').textContent=n;$('#mobile-cart-count').textContent=n;renderCart()}
+ async function load(){if(request)return request;clearTimeout(retryTimer);request=(async()=>{try{const r=await fetch('products.json',{cache:'no-store'});if(!r.ok)throw Error();products=validate(await r.json());state='ready';restore();report();renderProducts();persist();if(productId)renderDetail();return true}catch{state='error';report();renderProducts();renderCart();if(productId)$('#product-content').innerHTML='<p class="catalog-message">상품 정보를 불러오지 못했습니다. <button data-reload>다시 불러오기</button></p>';return false}})().finally(()=>{request=null;if(state==='error'&&!document.hidden&&navigator.onLine)retryTimer=setTimeout(load,15000)});return request}
+ function card(p){return `<article class="product-card ${p.soldOut?'is-sold-out':''}"><a class="product-link" href="${productUrl(p.id)}" aria-label="${esc(p.name)} ${esc(p.size)} 상세 보기"><div class="product-art"><span class="product-badge">${esc(p.size)}</span>${photo(p)}${p.soldOut?'<span class="sold-out-badge">품절</span>':''}</div><div class="product-info"><span class="product-category">${groupName(p)}</span><h3>${esc(p.name)}</h3><p>${esc(p.size)}</p></div></a><div class="price-row"><strong>${money(p.price)}</strong><button class="add-button" data-add="${p.id}" aria-label="${esc(p.name)} ${esc(p.size)} 장바구니 담기" ${p.soldOut?'disabled':''}>${p.soldOut?'−':'+'}</button></div></article>`}
+ function renderProducts(){const box=$('#products');box.setAttribute('aria-busy',String(state==='loading'));if(state!=='ready'){box.innerHTML=`<p class="catalog-message">${state==='loading'?'상품을 불러오는 중입니다.':'상품 정보를 불러오지 못했습니다. <button data-reload>다시 불러오기</button>'}</p>`;$('#product-count').textContent='';return}
+ const allowed=['all','fruit','vegetable','food','small','family'];if(!allowed.includes(category))category='all';const list=products.filter(p=>(category==='all'||group(p)===category||p.category===category)&&(!query||`${p.name} ${p.size} ${groupName(p)}`.toLowerCase().includes(query.toLowerCase())));
+ if(sort==='price-asc')list.sort((a,b)=>a.price-b.price);if(sort==='price-desc')list.sort((a,b)=>b.price-a.price);if(sort==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+ $('#product-count').textContent=`총 ${list.length}개`;$('#listing-title').textContent=query?`‘${query}’ 검색 결과`:'이팜의 먹거리';box.innerHTML=list.map(card).join('')||'<p class="catalog-message">해당하는 상품이 없습니다. 다른 검색어나 분류를 선택해 주세요.</p>';
+ document.querySelectorAll('[data-filter]').forEach(b=>{const active=b.dataset.filter===category;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active',a.dataset.nav===category))}
+ function renderCart(){const list=chosen();$('#cart-items').innerHTML=list.map(p=>`<div class="cart-item"><div><h3>${esc(p.name)} ${p.soldOut?'(품절)':''}</h3><p>${esc(p.size)} · ${money(p.price*cart[p.id])}</p><button class="remove" data-remove="${p.id}">삭제</button></div><div class="quantity"><button data-change="${p.id}" data-step="-1" aria-label="${esc(p.name)} 수량 줄이기" ${cart[p.id]===1||p.soldOut?'disabled':''}>−</button><span>${cart[p.id]}</span><button data-change="${p.id}" data-step="1" aria-label="${esc(p.name)} 수량 늘리기" ${cart[p.id]===99||p.soldOut?'disabled':''}>+</button></div></div>`).join('')||'<div class="empty"><p>장바구니에 담긴 상품이 없습니다.</p><button class="button" data-close>계속 쇼핑하기</button></div>';
+ $('#cart-summary').innerHTML=list.length?`<div class="total"><span>상품 합계${list.some(p=>p.soldOut)?' (품절 제외)':''}</span><strong>${money(subtotal())}</strong></div>${!canOrder()?'<p class="stock-warning">최신 상품 정보를 확인할 수 없거나 품절 상품이 있습니다. 주문 전 확인해 주세요.</p>':''}<p class="cart-notice">배송비 별도 · 재고와 배송비 확인 후 최종 금액 및 계좌이체 방법을 안내합니다.</p><div class="cart-actions"><button class="button outline" data-close>계속 쇼핑하기</button><button class="button primary" data-checkout ${canOrder()?'':'disabled'}>주문서 작성</button></div>`:''}
+ function relatedOptions(p){return p.id==='apple-5kg'||p.id==='apple-10kg'?products.filter(x=>['apple-5kg','apple-10kg'].includes(x.id)):[p]}
+ function renderDetail(){const p=products.find(x=>x.id===productId);if(!p){$('#product-content').innerHTML='<p class="catalog-message">상품을 찾을 수 없습니다. <a href="index.html">전체상품 보기 →</a></p>';document.title='상품을 찾을 수 없습니다 | 이팜';return}currentProduct=p;document.title=`${p.name} ${p.size} | 이팜`;const img=images(p);const related=products.filter(x=>x.id!==p.id).slice(0,4);$('#product-content').innerHTML=`<div class="breadcrumb"><a href="index.html">HOME</a><span>›</span><a href="index.html?category=${group(p)}#shop">${groupName(p)}</a><span>›</span><span>${esc(p.name)}</span></div><section class="product-layout"><div class="product-gallery"><img id="main-photo" class="main-photo" src="${img[0]}" alt="${esc(p.name)} ${esc(p.size)} ${productPhotos[p.id]?'실물':'참고'} 사진"><div class="thumbnails" aria-label="상품 사진 선택">${img.map((src,i)=>`<button class="thumbnail ${i===0?'active':''}" data-image="${i}" aria-label="상품 사진 ${i+1} 보기" aria-pressed="${i===0}"><img src="${src}" alt="상품 사진 ${i+1}" loading="lazy"></button>`).join('')}</div></div><div class="product-purchase"><p class="eyebrow">${groupName(p)} · LEE’S FARM</p><div class="product-title-row"><h1>${esc(p.name)}<br>${esc(p.size)}</h1><button class="share-button" data-share>링크 복사 ↗</button></div><dl class="purchase-info"><dt>판매가</dt><dd class="sale-price">${money(p.price)}</dd><dt>상품 구성</dt><dd>${esc(p.size)}</dd><dt>배송비</dt><dd>주문 확인 후 안내<div class="delivery-note">지역·상품 구성에 따라 달라질 수 있습니다.</div></dd><dt>결제 방법</dt><dd>계좌이체<div class="delivery-note">재고·최종 금액 확인 후 입금 방법을 안내합니다.</div></dd><dt>판매 상태</dt><dd>${p.soldOut?'품절':'주문 접수 가능'}</dd></dl><label class="variant-label" for="product-option">상품 선택<select id="product-option">${relatedOptions(p).map(x=>`<option value="${x.id}" ${x.id===p.id?'selected':''}>${esc(x.name)} ${esc(x.size)} · ${money(x.price)}${x.soldOut?' (품절)':''}</option>`).join('')}</select></label><div class="quantity-panel"><span>${esc(p.name)} ${esc(p.size)}</span><div class="quantity-line"><div class="quantity"><button data-qty="-1" aria-label="수량 줄이기" ${p.soldOut?'disabled':''}>−</button><label class="sr-only" for="product-qty">구매 수량</label><input id="product-qty" type="number" min="1" max="99" value="${quantity}" ${p.soldOut?'disabled':''}><button data-qty="1" aria-label="수량 늘리기" ${p.soldOut?'disabled':''}>+</button></div><strong id="line-total">${money(p.price*quantity)}</strong></div></div><div class="purchase-total"><span>총 상품금액 <small>(배송비 별도)</small></span><strong id="purchase-total">${money(p.price*quantity)}</strong></div><div class="purchase-actions"><button class="button outline" data-detail-add ${p.soldOut?'disabled':''}>장바구니</button><button class="button primary" data-buy ${p.soldOut?'disabled':''}>${p.soldOut?'품절된 상품':'바로 주문'}</button></div><p class="purchase-message">주문 접수 후 재고·배송비·입금 방법을 안내받고 주문을 확정해 주세요.</p></div></section><nav class="product-tabs" aria-label="상품 안내"><a href="#description">상품상세정보</a><a href="#shipping">배송안내</a><a href="#returns">교환·반품</a><a href="#inquiry">상품문의</a></nav><div class="product-body"><section class="detail-section" id="description"><p class="eyebrow">PRODUCT INFORMATION</p><h2>${esc(p.name)}</h2><p>${esc(p.description)}</p><table class="product-specs"><tbody><tr><th>상품명</th><td>${esc(p.name)}</td></tr><tr><th>중량·구성</th><td>${esc(p.size)}</td></tr><tr><th>판매가격</th><td>${money(p.price)} · 배송비 별도</td></tr></tbody></table>${img.map((src,i)=>`<img class="detail-photo" src="${src}" alt="${esc(p.name)} 상세 사진 ${i+1}" loading="lazy">`).join('')}<p class="photo-disclosure">${productPhotos[p.id]?'판매자가 제공한 상품 실물 사진입니다. 크기·외관·포장은 실제 수령 상품과 다를 수 있습니다.':'과일 참고 사진이며 실제 판매 상품의 품종·외관·포장과 다를 수 있습니다.'}</p></section><section class="detail-section" id="shipping"><h2>배송 안내</h2><p>배송 가능 지역과 배송비, 출고 일정은 주문 내역 확인 후 안내합니다.\n주문 접수 후 안내받은 최종 금액과 입금 방법을 확인해 주세요.\n재고·수확량·기상 상황에 따라 출고 일정이 달라질 수 있습니다.</p></section><section class="detail-section" id="returns"><h2>교환·반품 안내</h2><p>상품에 문제가 있는 경우 수령 후 상품과 포장 사진, 주문번호를 카카오톡으로 보내주세요.\n상품 상태와 출고 여부를 확인한 뒤 교환·반품·취소 절차를 안내합니다.\n상품별 보관 방법과 구체적인 처리 기준은 구매 전 상담에서 확인해 주세요.</p></section><section class="detail-section" id="inquiry"><h2>상품 문의</h2><p>상품 구성·배송·공동구매가 궁금하신가요? 이팜에 문의해 주세요.</p><div class="purchase-actions"><a class="button kakao" href="https://pf.kakao.com/_cxhCVn/chat">카카오톡 문의 ↗</a><a class="button outline" href="tel:01075706357">전화 010-7570-6357</a></div></section></div><section class="related-products"><h2>함께 둘러보세요</h2><div class="products">${related.map(card).join('')}</div></section><div class="detail-mobile-bar"><strong id="mobile-total">${money(p.price*quantity)}</strong><button class="button outline" data-detail-add ${p.soldOut?'disabled':''}>담기</button><button class="button primary" data-buy ${p.soldOut?'disabled':''}>${p.soldOut?'품절':'바로 주문'}</button></div>`;$('.mobile-cart').classList.add('hide-on-detail')}
+ function updateQty(value){quantity=Math.max(1,Math.min(99,Number.isInteger(Number(value))?Number(value):1));$('#product-qty').value=quantity;for(const s of ['#line-total','#purchase-total','#mobile-total'])$(s).textContent=money(currentProduct.price*quantity)}
+ function add(id,n=1){const p=products.find(x=>x.id===id);if(state!=='ready'||!p||p.soldOut)return toast('상품 판매 상태를 확인해 주세요.');if((cart[id]||0)+n>99)return toast('상품별 최대 99개까지 담을 수 있습니다.');cart[id]=(cart[id]||0)+n;persist();toast('장바구니에 담았습니다.');return true}
+ async function configureOrders(){try{const r=await fetch('order-config.json',{cache:'no-store'});directOrders=r.ok&&(await r.json()).enabled===true}catch{directOrders=false}if(directOrders){$('#submit-order').textContent='주문 접수하기';$('#order-mode-notice').textContent='주문서를 제출하면 주문번호가 발급되며, 배송비와 입금 방법을 개별 안내합니다.'}else{$('#submit-order').textContent='주문서 복사하기';$('#order-mode-notice').textContent='작성한 주문서를 복사해 카카오톡으로 보내주세요. 상담 후 배송비와 입금 방법을 안내합니다.'}return directOrders}
+ function checkoutSummary(){const list=chosen();$('#checkout-summary').innerHTML=`<ul>${list.map(p=>`<li>${esc(p.name)} ${esc(p.size)} × ${cart[p.id]} — ${money(p.price*cart[p.id])}</li>`).join('')}</ul><strong>상품 합계 ${money(subtotal())}</strong><span>배송비 별도 · 최종 금액은 확인 후 안내</span>`}
+ async function checkout(){await configureOrders();if(!await load()||!canOrder())return toast('상품 상태가 바뀌었습니다. 장바구니를 확인해 주세요.');$('#cart-dialog').close();checkoutSummary();$('#checkout-form').hidden=false;$('#order-success').hidden=true;$('#checkout-status').textContent='';$('#manual-order').hidden=true;$('#manual-order-text').value='';if(!$('#checkout-dialog').open)$('#checkout-dialog').showModal()}
+ document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.hasAttribute('data-close'))b.closest('dialog')?.close();
+ if(b.hasAttribute('data-reload'))load();
+ if(b.dataset.add)add(b.dataset.add);
+ if(b.hasAttribute('data-cart')){await load();if(!$('#cart-dialog').open)$('#cart-dialog').showModal()}
+ if(b.dataset.filter){category=b.dataset.filter;renderProducts()}
+ if(b.dataset.remove){delete cart[b.dataset.remove];persist()}
+ if(b.dataset.change){const id=b.dataset.change;if(products.find(p=>p.id===id)?.soldOut)return;cart[id]=Math.max(1,Math.min(99,cart[id]+Number(b.dataset.step)));persist()}
+ if(b.dataset.image!==undefined){const i=Number(b.dataset.image),src=images(currentProduct)[i];if(src){$('#main-photo').src=src;document.querySelectorAll('[data-image]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',String(x===b))})}}
+ if(b.dataset.qty)updateQty(quantity+Number(b.dataset.qty));
+ if(b.hasAttribute('data-detail-add'))add(currentProduct.id,quantity);
+ if(b.hasAttribute('data-buy')){cart[currentProduct.id]=quantity;persist();await checkout()}
+ if(b.hasAttribute('data-checkout'))await checkout();
+ if(b.hasAttribute('data-share')){try{await navigator.clipboard.writeText(new URL(productUrl(currentProduct.id),location.href).href);toast('상품 링크를 복사했습니다.')}catch{toast('브라우저 주소창의 상품 주소를 복사해 주세요.')}}
+ });
+ $('#search-input').value=query;$('#search-form').addEventListener('submit',e=>{e.preventDefault();const q=$('#search-input').value.trim();if(productId){location.href='index.html?q='+encodeURIComponent(q)+'#shop';return}query=q;renderProducts();$('#shop').scrollIntoView()});$('#sort-products').addEventListener('change',e=>{sort=e.target.value;renderProducts()});document.addEventListener('change',e=>{if(e.target.id==='product-option')location.href=productUrl(e.target.value);if(e.target.id==='product-qty')updateQty(e.target.value)});
+ $('#checkout-form').addEventListener('submit',async e=>{e.preventDefault();if(submitting)return;const form=e.currentTarget;if(!form.reportValidity())return;submitting=true;$('#submit-order').disabled=true;$('#checkout-status').textContent='상품과 주문 정보를 확인하는 중입니다…';try{const before=subtotal();if(!await load()||!canOrder())throw Error('상품 상태가 바뀌었습니다. 장바구니를 다시 확인해 주세요.');checkoutSummary();if(subtotal()!==before)throw Error('상품 가격이 변경되었습니다. 금액을 확인한 뒤 다시 접수해 주세요.');const data=Object.fromEntries(new FormData(form));data.consent=data.consent==='on';data.items=chosen().map(p=>({id:p.id,quantity:cart[p.id],price:p.price}));data.expectedTotal=subtotal();if(!directOrders){const text=['[이팜 주문 상담서]',...chosen().map(p=>p.name+' ('+p.size+') × '+cart[p.id]+': '+money(p.price*cart[p.id])),'상품 합계: '+money(subtotal())+' (배송비 별도)','받으시는 분: '+data.name,'전화번호: '+data.phone,'배송 주소: '+data.address,'요청 사항: '+(data.note||'없음'),'재고·배송비·최종 금액 및 입금 방법을 안내해 주세요.'].join('\n');$('#manual-order-text').value=text;$('#manual-order').hidden=false;let copied=false;try{await navigator.clipboard.writeText(text);copied=true}catch{$('#manual-order-text').focus();$('#manual-order-text').select();try{copied=document.execCommand('copy')}catch{}}$('#checkout-status').textContent=copied?'주문서를 복사했습니다. 아래 카카오톡을 열고 붙여넣어 전송해 주세요. 아직 주문이 접수되지는 않았습니다.':'자동 복사가 차단되었습니다. 아래 주문서를 직접 복사하고 카카오톡으로 전송해 주세요.';return}const fingerprint=JSON.stringify(data);if(orderFingerprint!==fingerprint){orderKey=crypto.randomUUID();orderFingerprint=fingerprint}const r=await fetch(ORDER_API+'/api/orders',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':orderKey},body:JSON.stringify(data)});const result=await r.json();if(!r.ok)throw Error(result.error||'주문을 접수하지 못했습니다. 잠시 후 다시 시도해 주세요.');$('#checkout-form').hidden=true;$('#checkout-summary').hidden=true;$('#order-success').hidden=false;$('#checkout-title').textContent='주문이 접수되었습니다';$('#order-success').innerHTML=`<div class="success-mark">✓</div><p>주문번호를 보관해 주세요.</p><p class="order-number">${esc(result.number)}</p><p>상품 합계 <strong>${money(result.subtotal)}</strong> · 배송비 별도</p><p class="muted">재고와 배송비 확인 후 전화 또는 문자로 최종 금액과 입금 방법을 안내합니다. 아직 결제된 상태가 아닙니다.</p><div class="success-actions"><a class="button outline" href="https://pf.kakao.com/_cxhCVn/chat">카카오톡 문의</a><button class="button primary" data-close>확인</button></div>`;cart={};persist();form.reset();orderKey=null;orderFingerprint=null;$('#checkout-status').textContent=''}catch(err){$('#checkout-status').textContent=err.message==='Failed to fetch'?'인터넷 연결을 확인하고 다시 접수해 주세요. 응답이 없더라도 같은 내용으로 다시 시도하면 중복 접수를 방지합니다.':err.message}finally{submitting=false;$('#submit-order').disabled=false}});
+ $('#checkout-dialog').addEventListener('close',()=>{if(submitting)return;$('#checkout-summary').hidden=false;$('#checkout-title').textContent='주문서 작성'});
+ document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}));
+ if(productId||location.pathname.endsWith('product.html')){$('#home-page').hidden=true;$('#product-page').hidden=false;$('#product-content').innerHTML='<p class="catalog-message">상품을 불러오는 중입니다.</p>'}
+ addEventListener('offline',()=>{state='error';report();renderProducts();renderCart();document.querySelectorAll('[data-buy],[data-detail-add]').forEach(b=>b.disabled=true)});addEventListener('online',load);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearTimeout(retryTimer);else if(state==='error')load()});configureOrders();report();renderProducts();load();
 })();

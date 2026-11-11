@@ -1,11 +1,11 @@
 'use strict';
-const RELEASE='20261111-products1';
+const RELEASE='20261111-mall1';
 const CACHE_PREFIX='leesfarm-shell-';
 const CACHE_NAME=CACHE_PREFIX+RELEASE;
 const BASE=new URL('./',self.location.href);
 const SHELL=[
-  './index.html','./offline.html','./manifest.webmanifest',
-  `./style.css?v=${RELEASE}`,`./catalog.js?v=${RELEASE}`,`./app.js?v=${RELEASE}`,`./pwa.js?v=${RELEASE}`,
+  './index.html','./product.html','./offline.html','./manifest.webmanifest',
+  `./shop.css?v=${RELEASE}`,`./catalog.js?v=${RELEASE}`,`./app.js?v=${RELEASE}`,`./pwa.js?v=${RELEASE}`,
   './assets/fonts/PretendardVariable.woff2',
   'assets/soy-tofu-1.jpg','assets/shinano-gold-bag-1.jpg','assets/carrot-bag-1.jpg',
   'assets/shine-muscat-1.jpg','assets/fuji-5kg-1.jpg','assets/fuji-5kg-2.jpg','assets/fuji-5kg-3.jpg','assets/fuji-10kg-2.jpg','assets/fuji-10kg-1.jpg',
@@ -36,7 +36,7 @@ self.addEventListener('fetch',event=>{
   if(request.method!=='GET'||url.origin!==BASE.origin||!url.pathname.startsWith(BASE.pathname))return;
   const path=url.pathname.slice(BASE.pathname.length);
   // Never serve cached prices, stock, admin pages or authentication responses.
-  if(path==='products.json'){
+  if(path==='products.json'||path==='order-config.json'){
     event.respondWith(fetch(new Request(request,{cache:'no-store'})).catch(()=>new Response('{"error":"catalog_unavailable"}',{status:503,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}})));
     return;
   }
