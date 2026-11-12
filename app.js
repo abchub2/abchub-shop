@@ -9,11 +9,13 @@
  const group=p=>p.id==='soy-tofu'?'food':p.id==='carrot-bag'?'vegetable':'fruit';
  const groupName=p=>({food:'먹거리',vegetable:'채소',fruit:'과일'})[group(p)];
  const images=p=>productPhotos[p.id]||[photos[p.photo||p.kind]];
+ const mainPhotos={'shinano-gold-5kg':'assets/ai/food-0.jpg','shinano-gold-bag':'assets/ai/food-0.jpg','shine-2kg':'assets/ai/food-1.jpg','jeju-1-5kg':'assets/ai/food-2.jpg','apple-5kg':'assets/ai/food-3.jpg','apple-10kg':'assets/ai/food-3.jpg','soy-tofu':'assets/ai/food-4.jpg','carrot-bag':'assets/ai/food-5.jpg'};
+ const isHome=!productId&&!location.pathname.endsWith('product.html');
  const productUrl=id=>'product.html?id='+encodeURIComponent(id);
  const chosen=()=>products.filter(p=>cart[p.id]);
  const subtotal=()=>chosen().reduce((n,p)=>n+(p.soldOut?0:p.price*cart[p.id]),0);
  const canOrder=()=>state==='ready'&&chosen().length>0&&!chosen().some(p=>p.soldOut);
- const photo=(p,cls='')=>`<img class="${cls}" src="${images(p)[0]}" alt="${esc(p.name)} ${esc(p.size)} ${productPhotos[p.id]?'실물':'참고'} 사진" loading="lazy" decoding="async">`;
+ const photo=(p,cls='')=>isHome&&mainPhotos[p.id]?`<img class="${cls}" src="${mainPhotos[p.id]}" alt="${esc(p.name)} AI 생성 참고 이미지" loading="lazy" decoding="async">`:`<img class="${cls}" src="${images(p)[0]}" alt="${esc(p.name)} ${esc(p.size)} ${productPhotos[p.id]?'실물':'참고'} 사진" loading="lazy" decoding="async">`;
  function toast(t){$('#toast').textContent=t;$('#toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),2800)}
  function report(){document.documentElement.dataset.catalogState=state;dispatchEvent(new Event('shop:catalog-state'))}
  function restore(){cart={};try{const old=JSON.parse(localStorage.getItem(key)||'{}');for(const p of products)if(Number.isInteger(old[p.id])&&old[p.id]>0)cart[p.id]=Math.min(old[p.id],99)}catch{}}

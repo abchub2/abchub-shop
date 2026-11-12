@@ -1,11 +1,12 @@
 'use strict';
-const RELEASE='20261111-mall1';
+const RELEASE='20261112-ai1';
 const CACHE_PREFIX='leesfarm-shell-';
 const CACHE_NAME=CACHE_PREFIX+RELEASE;
 const BASE=new URL('./',self.location.href);
 const SHELL=[
   './index.html','./product.html','./offline.html','./manifest.webmanifest',
   `./shop.css?v=${RELEASE}`,`./catalog.js?v=${RELEASE}`,`./app.js?v=${RELEASE}`,`./pwa.js?v=${RELEASE}`,
+  ...Array.from({length:6},(_,i)=>`./assets/ai/food-${i}.jpg`),
   './assets/fonts/PretendardVariable.woff2',
   'assets/soy-tofu-1.jpg','assets/shinano-gold-bag-1.jpg','assets/carrot-bag-1.jpg',
   'assets/shine-muscat-1.jpg','assets/fuji-5kg-1.jpg','assets/fuji-5kg-2.jpg','assets/fuji-5kg-3.jpg','assets/fuji-10kg-2.jpg','assets/fuji-10kg-1.jpg',
